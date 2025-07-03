@@ -19,7 +19,7 @@ export default function UrlForm() {
   };
 
   return (
-    <div>
+    <div className={styles.urlFormContainer}>
       <form onSubmit={handleSubmit}>
         <input
           type="url"
