@@ -1,0 +1,29 @@
+button{ 
+    margin-left: '1rem';
+     padding: '0.5rem 1rem'; 
+}
+
+.urlFormContainer form{
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    margin-bottom: 200px;
+    margin-top: 50px;
+
+}
+
+.urlFormContainer input {
+    padding: 0.75rem 1rem;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    width: 600px;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+  
+ .urlFormContainer input:focus {
+    border-color: #1e90ff;
+    box-shadow: 0 0 0 4px rgba(30, 144, 255, 0.2);
+  }
+  

@@ -1,0 +1,30 @@
+.container {
+    text-align: center;
+    max-width: 600px;
+    margin: auto;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+  }
+  
+  .longUrl {
+    font-size: 16px;
+    word-break: break-all;
+    color: #444;
+    margin-bottom: 10px;
+  }
+  
+  .arrow {
+    font-size: 24px;
+    color: #888;
+    margin:  0;
+  }
+  
+  .shortUrl {
+    font-size: 18px;
+    font-weight: bold;
+    color: #1a73e8;
+  }
+  
+  .container h3{
+    color: #5f6c7b;
+  }
