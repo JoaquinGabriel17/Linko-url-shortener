@@ -1,6 +1,6 @@
-import jwt from 'jsonwebtoken';
+import jwt  from 'jsonwebtoken';
 
-export default function authMiddleware(req, res, next) {
+function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -17,3 +17,5 @@ export default function authMiddleware(req, res, next) {
     return res.status(403).json({ error: 'Token inválido' });
   }
 }
+
+export default authMiddleware;
