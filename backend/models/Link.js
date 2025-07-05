@@ -12,7 +12,7 @@ const linkSchema = new mongoose.Schema({
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // relación con el modelo de Usuario
+    ref: 'User',
     required: true,
   },
   createdAt: {
@@ -25,4 +25,5 @@ const linkSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.model('Link', linkSchema);
+const Link = mongoose.model('Link', linkSchema);
+export default Link;

@@ -1,21 +1,20 @@
 import express from 'express';
+import { nanoid } from 'nanoid';
 import Link from '../models/Link.js';
-import { nanoid } from 'nanoid'; // para generar shortCode único
-import authMiddleware from '../middleware/auth.js'; // asumiendo que ya tenés auth
+import authMiddleware from '../middleware/auth.js';
 
 const router = express.Router();
 
 // Crear nuevo link
-router.post('/create', authMiddleware, async (req, res) => {
-  const { originalUrl } = req.body;
-  const userId = req.user.id; // viene del token verificado
+router.post('/create', async (req, res) => {
+  let { userId, originalUrl, shortCode } = req.body;
 
   if (!originalUrl) {
     return res.status(400).json({ error: 'URL requerida' });
   }
 
   try {
-    const shortCode = nanoid(6);
+    if(!shortCode) { shortCode = nanoid(6);}
 
     const newLink = new Link({
       originalUrl,
@@ -34,5 +33,36 @@ router.post('/create', authMiddleware, async (req, res) => {
     res.status(500).json({ error: 'Error del servidor' });
   }
 });
+
+//OBTENER LINKS DE UN USUARIO
+router.get('/links', async (req, res) => {
+  try {
+    const {userId} = req.query;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'No se informó un user id' });
+    }
+
+    const { sort, limit } = req.query;
+
+    const query = Link.find({ createdBy: userId });
+
+    if (sort) {
+      query.sort(sort); 
+    }
+
+    if (limit) {
+      query.limit(Number(limit));
+    }
+
+    const links = await query.exec();
+
+    res.json(links);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al obtener los links' });
+  }
+});
+
 
 export default router;

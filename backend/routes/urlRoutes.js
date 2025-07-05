@@ -1,6 +1,7 @@
-const express = require('express');
+import express from 'express';
+import Url from '../models/Url.js';
+
 const router = express.Router();
-const Url = require('../models/Url');
 
 // Generador simple de código corto
 const generateShortCode = () => {
@@ -52,4 +53,4 @@ router.get('/:shortCode', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
