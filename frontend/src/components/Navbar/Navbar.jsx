@@ -1,7 +1,12 @@
 import styles from './Navbar.module.css'
 import { AiFillGithub } from 'react-icons/ai';
+import { useUser } from '../../context/UserContext';
+
 
 export default function Navbar(){
+
+  const { user, login, logout } = useUser();
+
     return(
         <div className={styles.navbar}>
             <h1>Linko</h1>
@@ -13,9 +18,13 @@ export default function Navbar(){
                     <AiFillGithub className={styles.icon}></AiFillGithub></a>
                 </li>
                 <li>
-                    <a 
+                  {user.username? 
+                  <a>{user.username}</a>
+                : 
+                <a 
                     href='http://localhost:5173/login'
-                    >Iniciar sesión</a>
+                    >Iniciar sesión</a>}
+                    
                 </li>
             </ul>
         </div>
