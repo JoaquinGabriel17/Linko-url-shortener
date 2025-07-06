@@ -5,13 +5,11 @@ function TopLinks() {
   const [topLinks, setTopLinks] = useState([]);
   const [error, setError] = useState(null);
   const { user, login, logout } = useUser();
-  console.log(user)
 
+  useEffect(() => {
     const fetchTopLinks = async () => {
       try {
-        const token = localStorage.getItem('userId');
-        
-
+        const token = localStorage.getItem('token'); // si guardás el token ahí
         const res = await fetch(`http://localhost:3001/links/links?limit=5&sort=clicks&userId=${user.userId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -26,8 +24,10 @@ function TopLinks() {
       }
     };
 
-
+    if (user.userId) {
       fetchTopLinks();
+    }
+  }, [user.userId]);
  
  
 
