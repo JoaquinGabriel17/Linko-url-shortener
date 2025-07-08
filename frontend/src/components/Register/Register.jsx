@@ -2,6 +2,7 @@ import styles from './Register.module.css';
 
 export default function Register() {
   return (
+    <div className={styles.background}>
     <div className={styles.container}>
       <h2 className={styles.title}>Crear cuenta</h2>
       <form className={styles.form}>
@@ -11,6 +12,7 @@ export default function Register() {
         <input type="password" placeholder="Confirmar contraseña" className={styles.input} />
         <button type="submit" className={styles.button}>Registrarse</button>
       </form>
+    </div>
     </div>
   );
 }

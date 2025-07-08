@@ -7,18 +7,18 @@ export const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     // Intentamos cargar desde localStorage si ya estaba logueado
-    const saved = localStorage.getItem('user');
+    const saved = sessionStorage.getItem('user');
     return saved ? JSON.parse(saved) : null;
   });
 
   const login = (userData) => {
     setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+    sessionStorage.setItem('user', JSON.stringify(userData));
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('user');
   };
 
   return (
