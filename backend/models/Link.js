@@ -10,6 +10,14 @@ const linkSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  name:{
+    type: String,
+    default: 'Linko'
+  },
+  description:{
+    type: String,
+    default: 'No se ingresó una descripción.'
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

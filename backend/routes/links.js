@@ -6,8 +6,8 @@ import authMiddleware from '../middleware/auth.js';
 const router = express.Router();
 
 // Crear nuevo link
-router.post('/create', async (req, res) => {
-  let { userId, originalUrl, shortCode } = req.body;
+router.post('/create',authMiddleware, async (req, res) => {
+  let { userId, originalUrl, shortCode, name, description } = req.body;
 
   if (!originalUrl) {
     return res.status(400).json({ error: 'URL requerida' });
@@ -16,11 +16,21 @@ router.post('/create', async (req, res) => {
   try {
     if(!shortCode) { shortCode = nanoid(6);}
 
-    const newLink = new Link({
+    const linkData = {
       originalUrl,
       shortCode,
       createdBy: userId,
-    });
+    };
+  
+    if (name) {
+      linkData.name = name;
+    }
+    if (description) {
+      linkData.description = description;
+    }
+
+    const newLink = new Link(linkData);
+  
 
     await newLink.save();
 
@@ -35,7 +45,7 @@ router.post('/create', async (req, res) => {
 });
 
 //OBTENER LINKS DE UN USUARIO
-router.get('/links', async (req, res) => {
+router.get('/links',authMiddleware, async (req, res) => {
   try {
     const {userId} = req.query;
 
@@ -64,5 +74,32 @@ router.get('/links', async (req, res) => {
   }
 });
 
+//ELIMINAR LINK
+router.delete('/delete', async (req, res) => {
+  try {
+    const {linkId, userId} = req.query;
+
+    if (!linkId) {
+      return res.status(401).json({ message: 'No se informó un link id' });
+    }
+
+    const query = Link.findById(linkId);
+    const link = await query.exec();
+    if (!link) {
+      return res.status(404).json({ message: 'Link no encontrado' });
+    }
+    
+    if (link.createdBy.toString() !== userId) {
+      return res.status(401).json({ message: 'El link no pertenece al usuario' });
+    }
+
+    await Link.findByIdAndDelete(linkId);
+
+    res.json({ message: 'Link eliminado correctamente'});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al obtener los links' });
+  }
+});
 
 export default router;
