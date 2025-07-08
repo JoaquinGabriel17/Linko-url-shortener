@@ -13,6 +13,9 @@
         width: 96vw;
         margin-bottom: 50px;
   }
+  .navbar h1{
+    cursor: pointer;
+  }
   
   .navbar ul {
     list-style: none;

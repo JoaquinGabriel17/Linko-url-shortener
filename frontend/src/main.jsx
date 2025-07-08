@@ -7,6 +7,7 @@ import Login from './components/Login/Login';
 import Register from './components/Register/Register';
 import './main.css'; // <--- IMPORTANTE
 import { UserProvider } from './context/UserContext';
+import UserDashboard from './components/UserDashboard/UserDashboard';
 
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -18,6 +19,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path='/login' element={<Login />} />
         <Route path='/register' element={<Register />} />
         <Route path="/:shortCode" element={<RedirectPage />} />
+        <Route path='/user' element={<UserDashboard />} />
       </Routes>
       </UserProvider>
     </BrowserRouter>

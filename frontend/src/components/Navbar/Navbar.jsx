@@ -1,7 +1,7 @@
 import styles from './Navbar.module.css';
 import { AiFillGithub } from 'react-icons/ai';
 import { useUser } from '../../context/UserContext';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function Navbar() {
   const { user, logout } = useUser();
@@ -12,10 +12,15 @@ export default function Navbar() {
     localStorage.removeItem('token'); // elimina el token JWT
     navigate('/');
   };
+  const handleHome = () => {
+    if (location.pathname !== '/') {
+      navigate('/');
+    }
+  }
 
   return (
     <div className={styles.navbar}>
-      <h1>Linko</h1>
+      <a onClick={handleHome} ><h1>Linko</h1></a>
 
       <ul>
         <li>
@@ -30,7 +35,7 @@ export default function Navbar() {
 
         {user?.username ? (
           <>
-            <li><a>Preferencias</a></li>
+            <li><a href='http://localhost:5173/user'>Cuenta</a></li>
             <li><a onClick={handleLogout} style={{ cursor: 'pointer' }}>Cerrar sesión</a></li>
           </>
         ) : (

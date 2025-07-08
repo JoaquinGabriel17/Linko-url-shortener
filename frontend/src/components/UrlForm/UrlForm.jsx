@@ -3,13 +3,14 @@ import axios from 'axios';
 import styles from './UrlForm.module.css'
 import { useUser } from '../../context/UserContext';
 import Link from '../Link/Link';
+import CreateLink from '../CreateLink/CreateLink';
 
 export default function UrlForm() {
   const [originalUrl, setOriginalUrl] = useState('');
   const [shortUrl, setShortUrl] = useState('');
   const [error, setError] = useState('');
   const { user } = useUser();
-
+  const [createLink, setCreateLink] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,11 +29,11 @@ export default function UrlForm() {
   }
   const handleSave = async(e) => {
     e.preventDefault();
-    if(user){}
-    else{
-      setError('Debes iniciar sesión para guardar una URL')
-    }
+    if(user) setCreateLink(true)
+    else  setError('Debes iniciar sesión para guardar una URL')
+    
   }
+
 
   return (
     <div className={styles.urlFormContainer}>
@@ -52,9 +53,7 @@ export default function UrlForm() {
 
       {shortUrl && (
         <div className={styles.shortUrlContainer}>
-        <p className={styles.shortUrl}>
-          URL acortada: <a href={shortUrl} target="_blank" rel="noopener noreferrer">{shortUrl}</a>
-        </p>
+          <Link url={shortUrl}></Link>
         <div className={styles.buttonContain}>
         <button
           onClick={handleDrop}
@@ -64,9 +63,12 @@ export default function UrlForm() {
         >Guardar</button>
         </div>
         {error && <p className={styles.error}>{error}</p>}
+        {createLink&&<CreateLink 
+        onClose={() => setCreateLink(false)}
+        urlToSave={originalUrl}
+        visible={createLink}></CreateLink>}
         </div>
       )}
-      <Link url={'ñalskdñalskdñalskd'}></Link>
     </div>
   );
 }
