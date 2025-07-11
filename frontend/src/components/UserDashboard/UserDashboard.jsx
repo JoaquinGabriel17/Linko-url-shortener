@@ -3,12 +3,15 @@ import styles from './UserDashboard.module.css'
 import { useUser } from '../../context/UserContext';
 import React, { useEffect, useState } from 'react';
 import Link from '../Link/Link';
+import CreateLink from '../CreateLink/CreateLink';
 
 export default function UserDashboard(){
 
     const { user } = useUser()
     const [links, setLinks] = useState([]);
     const [error, setError] = useState(null);
+    const [createLink, setCreateLink] = useState(false)
+
 
     useEffect(() => {
         const fetchLinks = async () => {
@@ -32,11 +35,27 @@ export default function UserDashboard(){
         }
       }, [user.userId]);
 
+      const createLinkHandle= async (e) => {
+        e.preventDefault();
+        setCreateLink(!createLink)
+      }
+
 
     return(
         <div className={styles.container}>
             <Navbar></Navbar>
+            <div className={styles.newLinkContainer}>
             <h1>Dashboard</h1>
+            <button 
+            className={styles.createLink}
+            onClick={createLinkHandle}
+            >Nuevo link +</button>
+
+            {createLink&&<CreateLink 
+            onClose={() => setCreateLink(false)}
+            visible={createLink}></CreateLink>}
+
+            </div>
             <div className={styles.linkContainer}>
                     <ul>
                         {links.map(link => (

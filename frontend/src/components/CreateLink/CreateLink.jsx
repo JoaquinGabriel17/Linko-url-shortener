@@ -5,17 +5,39 @@ import { useUser } from '../../context/UserContext';
 export default function CreateLink({ visible, urlToSave, onClose }) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [url, setUrl] = useState('');
   const { user } = useUser()
+
+  /*function isValidUrl(string) {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }*/
+  
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const payload = {
-      originalUrl: urlToSave,
+      originalUrl: '',
       userId: user.userId,
       name,
       description,
     };
+
+    if(!urlToSave){ 
+      if(!url || url.trim() === '') alert('Debe cargar una URL')
+      else payload.originalUrl = url
+    }
+    else alert('Debe cargar una URL')
+
+    /*if (!isValidUrl(url)) {
+      console.log('URL inválida');
+    }*/
+
 
     try {
       const response = await fetch('http://localhost:3001/links/create', {
@@ -62,9 +84,11 @@ export default function CreateLink({ visible, urlToSave, onClose }) {
             X</button>
       <form onSubmit={handleSubmit}>
         <input
-          type='text'
+          type="url"
           value={urlToSave}
-          disabled
+          placeholder="https://ejemplo.com"
+          required
+          onChange={(e) => setUrl(e.target.value)}
         />
 
         <input

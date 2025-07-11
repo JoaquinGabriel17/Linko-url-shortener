@@ -5,3 +5,16 @@
     flex-direction: row;
     flex-wrap: wrap;
 }
+.container h1{
+}
+.newLinkContainer{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 20px;
+
+  }
+  .newLinkContainer button{
+    height: fit-content;
+    font-size: 1rem;
+  }
