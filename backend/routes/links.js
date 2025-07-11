@@ -75,7 +75,7 @@ router.get('/links',authMiddleware, async (req, res) => {
 });
 
 //ELIMINAR LINK
-router.delete('/delete', async (req, res) => {
+router.delete('/delete',authMiddleware, async (req, res) => {
   try {
     const {linkId, userId} = req.query;
 
@@ -99,6 +99,37 @@ router.delete('/delete', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error al obtener los links' });
+  }
+});
+
+//EDITAR UN LINK
+router.put('/edit', authMiddleware, async (req, res) => {
+  try {
+    const { linkId, userId, name, description, originalUrl } = req.body;
+
+    if (!linkId) {
+      return res.status(400).json({ message: 'No se informó un link id' });
+    }
+
+    const link = await Link.findById(linkId);
+    if (!link) {
+      return res.status(404).json({ message: 'Link no encontrado' });
+    }
+
+    if (link.createdBy.toString() !== userId) {
+      return res.status(401).json({ message: 'El link no pertenece al usuario' });
+    }
+
+    if (name !== undefined) link.name = name;
+    if (description !== undefined) link.description = description;
+    if (originalUrl !== undefined) link.originalUrl = originalUrl;
+
+    await link.save();
+
+    res.json({ message: 'Link editado correctamente', link });
+  } catch (error) {
+    console.error('Error al editar link:', error);
+    res.status(500).json({ message: 'Error del servidor' });
   }
 });
 
