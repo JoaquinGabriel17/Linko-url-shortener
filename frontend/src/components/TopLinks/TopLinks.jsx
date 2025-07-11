@@ -41,7 +41,7 @@ function TopLinks() {
       <ul>
         {topLinks.map(link => (
           <li key={link._id}>
-            <Link url={link.originalUrl}></Link>
+            <Link name={link.name} url={link.originalUrl}></Link>
           </li>
         ))}
       </ul>
