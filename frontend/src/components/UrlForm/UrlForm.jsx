@@ -14,15 +14,26 @@ export default function UrlForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setError('');
+  
+    // Validación manual
+    try {
+      new URL(originalUrl);
+    } catch {
+      return setError('URL no válida. Verificá que empiece con http:// o https://');
+    }
+  
     try {
       const res = await axios.post('http://localhost:3001/shorten', { originalUrl });
       setShortUrl(res.data.shortUrl);
     } catch (err) {
       console.error('Error al acortar URL:', err);
-      alert('Hubo un error');
+      setError(err.response?.data?.error || 'Hubo un error al acortar la URL');
     }
   };
+  
+
+
   const handleDrop = async(e) => {
     e.preventDefault();
     setShortUrl('')
@@ -37,19 +48,18 @@ export default function UrlForm() {
 
   return (
     <div className={styles.urlFormContainer}>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="url"
-          placeholder="Pegá tu URL"
-          value={originalUrl}
-          onChange={(e) => setOriginalUrl(e.target.value)}
-          required
-          
-        />
-        <button type="submit">
-          Acortar
-        </button>
-      </form>
+     <form onSubmit={handleSubmit}>
+  <input
+    type="url"
+    placeholder="Pegá tu URL"
+    value={originalUrl}
+    onChange={(e) => setOriginalUrl(e.target.value)}
+    required
+  />
+  <button type="submit">Acortar</button>
+  {error && <p className={styles.error}>{error}</p>}
+</form>
+
 
       {shortUrl && (
         <div className={styles.shortUrlContainer}>

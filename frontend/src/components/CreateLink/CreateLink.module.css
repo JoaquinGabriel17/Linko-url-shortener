@@ -52,4 +52,9 @@
     border: 1px solid #ccc;
   }
   
- 
+  .error {
+    color: red;
+    margin-top: 10px;
+    font-size: 0.9rem;
+  }
+  

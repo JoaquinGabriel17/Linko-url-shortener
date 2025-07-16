@@ -7,38 +7,51 @@ export default function CreateLink({ visible, urlToSave, onClose }) {
   const [description, setDescription] = useState('');
   const [url, setUrl] = useState('');
   const { user } = useUser()
+  const [error, setError] = useState('');
 
-  /*function isValidUrl(string) {
+  function isValidUrl(string) {
     try {
-      new URL(string);
-      return true;
+      const url = new URL(string);
+      const hasValidProtocol = url.protocol === 'http:' || url.protocol === 'https:';
+      const isLocalOrHasDot = url.hostname === 'localhost' || url.hostname.includes('.') || /^[0-9.]+$/.test(url.hostname); // permite IPs
+      return hasValidProtocol && isLocalOrHasDot;
     } catch (_) {
       return false;
     }
-  }*/
+  }
+  
   
 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+  
+    const original = urlToSave || url;
+  
+    if (!original || original.trim() === '') {
+      return setError('Debe ingresar una URL.');
+    }
+  
+    if (!isValidUrl(original)) {
+      return setError('La URL ingresada no es válida. Asegurate de que comience con http:// o https://');
+    }
+  
+    if (name.length > 100) {
+      return setError('El nombre es demasiado largo. Máximo 100 caracteres.');
+    }
+  
+    if (description.length > 300) {
+      return setError('La descripción es demasiado larga. Máximo 300 caracteres.');
+    }
+  
     const payload = {
-      originalUrl: '',
+      originalUrl: original,
       userId: user.userId,
       name,
       description,
     };
-
-    if(!urlToSave){ 
-      if(!url || url.trim() === '') alert('Debe cargar una URL')
-      else payload.originalUrl = url
-    }
-    else alert('Debe cargar una URL')
-
-    /*if (!isValidUrl(url)) {
-      console.log('URL inválida');
-    }*/
-
-
+  
     try {
       const response = await fetch('http://localhost:3001/links/create', {
         method: 'POST',
@@ -48,21 +61,21 @@ export default function CreateLink({ visible, urlToSave, onClose }) {
         },
         body: JSON.stringify(payload),
       });
-
+  
       const data = await response.json();
-
+  
       if (!response.ok) {
-        console.error('Error al crear el link:', data.error);
+        setError(data.error || 'Error al crear el link.');
       } else {
-        console.log('Link creado correctamente:', data);
         alert('El link fue creado correctamente');
-        onClose()
-        // Podés agregar una limpieza de campos o mostrar un mensaje
+        onClose();
       }
     } catch (error) {
       console.error('Error de red:', error);
+      setError('Error de red. Intentalo de nuevo más tarde.');
     }
   };
+  
 
   return (
     <div className={styles.overlay}
@@ -106,6 +119,8 @@ export default function CreateLink({ visible, urlToSave, onClose }) {
         />
 
         <button type='submit'>Crear Link</button>
+        {error && <p className={styles.error}>{error}</p>}
+
       </form>
     </div>
     </div>
