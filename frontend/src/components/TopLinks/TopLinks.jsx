@@ -41,7 +41,13 @@ function TopLinks() {
       <ul>
         {topLinks.map(link => (
           <li key={link._id}>
-            <Link name={link.name} url={link.originalUrl}></Link>
+            <Link 
+            name={link.name} 
+            url={link.originalUrl} 
+            linkId={link._id}
+            description={link.description} 
+            onDelete={(id) => setLinks(prev => prev.filter(l => l._id !== id))}
+            ></Link>
           </li>
         ))}
       </ul>

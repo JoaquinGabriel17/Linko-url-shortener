@@ -57,7 +57,7 @@ export default function UserDashboard(){
 
             </div>
             <div className={styles.linkContainer}>
-                    <ul>
+                    <ul className={styles.linkList}>
                         {links.map(link => (
                         <li key={link._id}>
                           <Link 
@@ -66,6 +66,7 @@ export default function UserDashboard(){
                           description={link.description}
                           linkId={link._id}
                           shortCode={link.shortCode}
+                          onDelete={(id) => setLinks(prev => prev.filter(l => l._id !== id))}
                           ></Link>
                         </li>
                         ))}

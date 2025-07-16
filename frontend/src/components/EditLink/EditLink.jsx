@@ -2,10 +2,10 @@ import { useState } from 'react';
 import styles from './EditLink.module.css';
 import { useUser } from '../../context/UserContext';
 
-export default function EditLink({  linkId, onClose  }) {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [originalUrl, setOriginalUrl] = useState('');
+export default function EditLink({  linkId, onClose, originalName, originalDescription, originalUrl  },onClick, ref) {
+  const [name, setName] = useState(originalName || '');
+  const [description, setDescription] = useState(originalDescription || '');
+  const [url, setUrl] = useState(originalUrl || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -19,12 +19,11 @@ export default function EditLink({  linkId, onClose  }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if(!originalUrl.trim() && !description.trim() && !name.trim()) return alert('Debe modificar al menos un campo')
+    if(!url.trim() && !description.trim() && !name.trim()) return alert('Debe modificar al menos un campo')
     if(name.trim()) payload.name = name
     if(description.trim()) payload.description = description
     if(originalUrl.trim()) payload.originalUrl = originalUrl
 
-//ME QUEDE ACA ME VOY A CAGAR
     try {
       setLoading(true);
       setError('');
@@ -51,30 +50,32 @@ export default function EditLink({  linkId, onClose  }) {
   };
 
   return (
-    <div className={styles.formContainer}>
+    <div 
+    ref={ref}          
+    onClick={onClick}
+    className={styles.formContainer}>
       <form onSubmit={handleSubmit} className={styles.form}>
         <h3>Editar link</h3>
 
         <input
           type="text"
-          placeholder="Nombre (opcional)"
+          placeholder={originalName || "Nombre (opcional)"}
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
 
         <input
           type="text"
-          placeholder="Descripción (opcional)"
+          placeholder={originalDescription || "Descripción (opcional)"}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
 
         <input
           type="url"
-          placeholder="URL original"
-          value={originalUrl}
-          onChange={(e) => setOriginalUrl(e.target.value)}
-          required
+          placeholder={originalUrl || "URL original"}
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
         />
 
         {error && <p className={styles.error}>{error}</p>}
