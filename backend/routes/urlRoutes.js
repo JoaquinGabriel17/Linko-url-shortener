@@ -19,6 +19,14 @@ router.post('/shorten', async (req, res) => {
 
   if (!originalUrl) return res.status(400).json({ error: 'URL requerida' });
 
+    // Validación usando el constructor URL
+    let validUrl;
+    try {
+      validUrl = new URL(originalUrl);
+    } catch (err) {
+      return res.status(400).json({ error: 'URL no válida' });
+    }
+
   const shortCode = generateShortCode();
 
   try {
