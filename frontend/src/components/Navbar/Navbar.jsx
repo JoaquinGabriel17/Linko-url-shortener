@@ -2,6 +2,8 @@ import styles from './Navbar.module.css';
 import { AiFillGithub } from 'react-icons/ai';
 import { useUser } from '../../context/UserContext';
 import { useLocation, useNavigate } from 'react-router-dom';
+const frontendUrl = process.env.FRONTEND_URL;
+
 
 export default function Navbar() {
   const { user, logout } = useUser();
@@ -35,12 +37,12 @@ export default function Navbar() {
 
         {user?.username ? (
           <>
-            <li><a href='http://localhost:5173/user'>Cuenta</a></li>
+            <li><a href={`${frontendUrl}/user`}>Cuenta</a></li>
             <li><a onClick={handleLogout} style={{ cursor: 'pointer' }}>Cerrar sesión</a></li>
           </>
         ) : (
           <li>
-            <a href="http://localhost:5173/login">Iniciar sesión</a>
+            <a href={`${frontendUrl}/login`}>Iniciar sesión</a>
           </li>
         )}
       </ul>

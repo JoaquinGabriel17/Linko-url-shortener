@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
 import { useUser } from '../../context/UserContext'; // contexto de usuario
 const backendUrl = process.env.BACKEND_URL;
+const frontendUrl = process.env.FRONTEND_URL;
+
 
 export default function Login() {
   const [form, setForm] = useState({
@@ -79,7 +81,7 @@ export default function Login() {
           <button type="submit" className={styles.button}>Ingresar</button>
           {error && <p style={{ color: 'red', marginTop: '0.5rem' }}>{error}</p>}
         </form>
-        <a href={`${backendUrl}/register`}>Crear una cuenta</a>
+        <a href={`${frontendUrl}/register`}>Crear una cuenta</a>
       </div>
     </div>
   );
