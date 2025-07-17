@@ -2,7 +2,8 @@ import styles from './Navbar.module.css';
 import { AiFillGithub } from 'react-icons/ai';
 import { useUser } from '../../context/UserContext';
 import { useLocation, useNavigate } from 'react-router-dom';
-const frontendUrl = process.env.FRONTEND_URL;
+const frontendUrl = import.meta.env.VITE_FRONTEND_URL;
+
 
 
 export default function Navbar() {
