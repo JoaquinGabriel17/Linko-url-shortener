@@ -15,6 +15,11 @@ const PORT = process.env.PORT || 10000;
 app.use(cors());
 app.use(express.json());
 
+app.use(cors({
+  origin: 'https://url-shortener-xi-lac.vercel.app', // tu dominio Vercel
+  credentials: true
+}));
+
 app.use('/', urlRoutes);
 app.use('/links', links);
 app.use('/auth', auth);
