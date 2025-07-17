@@ -8,7 +8,9 @@ const frontendUrl = process.env.FRONTEND_URL;
 export default function Navbar() {
   const { user, logout } = useUser();
   const navigate = useNavigate();
+  console.log(frontendUrl)
 
+  
   const handleLogout = () => {
     logout(); // limpia el usuario del contexto
     localStorage.removeItem('token'); // elimina el token JWT
