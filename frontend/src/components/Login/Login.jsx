@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
 import { useUser } from '../../context/UserContext'; // contexto de usuario
-const backendUrl = process.env.BACKEND_URL;
-const frontendUrl = process.env.FRONTEND_URL;
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
+const frontendUrl = import.meta.env.VITE_FRONTEND_URL;
+
 
 
 export default function Login() {
