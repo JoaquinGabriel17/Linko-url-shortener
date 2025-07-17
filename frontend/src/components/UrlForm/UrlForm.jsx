@@ -4,6 +4,8 @@ import styles from './UrlForm.module.css'
 import { useUser } from '../../context/UserContext';
 import Link from '../Link/Link';
 import CreateLink from '../CreateLink/CreateLink';
+const frontendUrl = process.env.FRONTEND_URL;
+
 
 export default function UrlForm() {
   const [originalUrl, setOriginalUrl] = useState('');
@@ -11,6 +13,7 @@ export default function UrlForm() {
   const [error, setError] = useState('');
   const { user } = useUser();
   const [createLink, setCreateLink] = useState(false)
+  console.log(frontendUrl)
 
   const handleSubmit = async (e) => {
     e.preventDefault();
