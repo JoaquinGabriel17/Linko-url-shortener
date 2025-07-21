@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useUser } from '../../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
+const frontendUrl = import.meta.env.VITE_FRONTEND_URL
 
 export default function Register() {
 
@@ -85,6 +86,11 @@ export default function Register() {
 
   return (
     <div className={styles.background}>
+      <a href={`${frontendUrl}`}
+      className={styles.homeButton}
+      >
+        <button>Página principal</button>
+      </a>
     <div className={styles.container}>
       <h2 className={styles.title}>Crear cuenta</h2>
       <form className={styles.form}>
@@ -126,6 +132,9 @@ export default function Register() {
           onClick={handleSubmit}
           type="submit" 
           className={styles.button}>Registrarse</button>
+          <a href={`${frontendUrl}/login`}
+          className={styles.loginButton}
+          ><button>¿Ya tienes una cuenta? Inicia sesión aquí</button></a>
       </form>
       { alertData && <Alert resolve={resolve} alertData={alertData} ></Alert>}
     </div>

@@ -68,6 +68,11 @@ export default function Login() {
 
   return (
     <div className={styles.background}>
+      <a href={`${frontendUrl}`}
+      className={styles.homeButton}
+      >
+        <button>Página principal</button>
+      </a>
       {loading ? (
   <Loading fullscreen />
 ) : (
@@ -97,7 +102,7 @@ export default function Login() {
         </form>
 
         {/*<a href={`${frontendUrl}/register`}>Crear una cuenta</a>*/}
-        <a href={`http://localhost:5173/register`}>Crear una cuenta</a>
+        <a href={`${frontendUrl}/register`}>Crear una cuenta</a>
       </div>
       )}
     </div>
