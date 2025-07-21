@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import styles from './CreateLink.module.css';
 import { useUser } from '../../context/UserContext';
+import Loading from '../Loading/Loading';
+import Alert from '../Alert/Alert';
 
 export default function CreateLink({ visible, urlToSave, onClose }) {
   const [name, setName] = useState('');
@@ -8,6 +10,11 @@ export default function CreateLink({ visible, urlToSave, onClose }) {
   const [url, setUrl] = useState('');
   const { user } = useUser()
   const [error, setError] = useState('');
+  const [ loading, setLoading] = useState(false)
+  const [ alert, setAlert] = useState(null)
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+
 
   function isValidUrl(string) {
     try {
@@ -26,23 +33,51 @@ export default function CreateLink({ visible, urlToSave, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-  
+    setLoading(true)
     const original = urlToSave || url;
   
     if (!original || original.trim() === '') {
-      return setError('Debe ingresar una URL.');
+      setLoading(false)
+      setAlert({
+        type: 'error',
+        title: 'Error al guardar link',
+        message: 'Debe ingresar una URL.'
+      })
+      return
+
     }
   
     if (!isValidUrl(original)) {
-      return setError('La URL ingresada no es válida. Asegurate de que comience con http:// o https://');
+      setLoading(false)
+      setAlert({
+        type: 'error',
+        title: 'Error al guardar link',
+        message: 'La URL ingresada no es válida. Asegurate de que comience con http:// o https://'
+      })
+      return
+
     }
   
     if (name.length > 100) {
-      return setError('El nombre es demasiado largo. Máximo 100 caracteres.');
+      setLoading(false)
+      setAlert({
+        type: 'error',
+        title: 'Error al guardar link',
+        message: 'El nombre es demasiado largo. Máximo 100 caracteres.'
+      })
+      return
+
     }
   
     if (description.length > 300) {
-      return setError('La descripción es demasiado larga. Máximo 300 caracteres.');
+      setLoading(false)
+      setAlert({
+        type: 'error',
+        title: 'Error al guardar link',
+        message: 'La descripción es demasiado larga. Máximo 300 caracteres.'
+      })
+      return
+
     }
   
     const payload = {
@@ -53,7 +88,7 @@ export default function CreateLink({ visible, urlToSave, onClose }) {
     };
   
     try {
-      const response = await fetch('http://localhost:3001/links/create', {
+      const response = await fetch(`${backendUrl}/links/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -65,17 +100,36 @@ export default function CreateLink({ visible, urlToSave, onClose }) {
       const data = await response.json();
   
       if (!response.ok) {
-        setError(data.error || 'Error al crear el link.');
+        setLoading(false)
+        setAlert({
+          type: 'error',
+          title: 'Error al guardar link',
+          message: data.error || 'Error al crear el link.'
+        })
+    
       } else {
-        alert('El link fue creado correctamente');
+        setLoading(false)
+        setAlert({
+          type: 'info',
+          title: 'El link fue creado correctamente',
+          message: 'Ya puedes consultarlo en tu dashboard'
+        })
         onClose();
       }
     } catch (error) {
+      setLoading(false)
       console.error('Error de red:', error);
-      setError('Error de red. Intentalo de nuevo más tarde.');
+      setAlert({
+        type: 'error',
+        title: 'Error al guardar link',
+        message: 'Error de red. Intentalo de nuevo más tarde.'
+      })
     }
   };
   
+  const resolve = async(e) => {
+    setAlert(null)
+  }
 
   return (
     <div className={styles.overlay}
@@ -95,6 +149,7 @@ export default function CreateLink({ visible, urlToSave, onClose }) {
         onClick={onClose}
         className={styles.close}>
             X</button>
+            {loading ? <Loading></Loading> : (
       <form onSubmit={handleSubmit}>
         <input
           type="url"
@@ -119,9 +174,11 @@ export default function CreateLink({ visible, urlToSave, onClose }) {
         />
 
         <button type='submit'>Crear Link</button>
-        {error && <p className={styles.error}>{error}</p>}
 
       </form>
+      )}
+            { alert && <Alert resolve={resolve} alert={alert} ></Alert>}
+
     </div>
     </div>
   );
