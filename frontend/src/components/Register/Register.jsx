@@ -132,9 +132,9 @@ export default function Register() {
           onClick={handleSubmit}
           type="submit" 
           className={styles.button}>Registrarse</button>
-          <a href={`${frontendUrl}/login`}
+          <a 
           className={styles.loginButton}
-          ><button>¿Ya tienes una cuenta? Inicia sesión aquí</button></a>
+          ><button onClick={() => navigate('/login')} >¿Ya tienes una cuenta? Inicia sesión aquí</button></a>
       </form>
       { alertData && <Alert resolve={resolve} alertData={alertData} ></Alert>}
     </div>
