@@ -9,7 +9,6 @@ const frontendUrl = import.meta.env.VITE_FRONTEND_URL;
 export default function Navbar() {
   const { user, logout } = useUser();
   const navigate = useNavigate();
-  console.log(frontendUrl)
 
   
   const handleLogout = () => {
@@ -40,12 +39,14 @@ export default function Navbar() {
 
         {user?.username ? (
           <>
-            <li><a href={`${frontendUrl}/user`}>Cuenta</a></li>
+            {/*<li><a href={`${frontendUrl}/user`}>Cuenta</a></li>*/}
+            <li><a href={`http://localhost:5173/user`}>Tablero</a></li>
             <li><a onClick={handleLogout} style={{ cursor: 'pointer' }}>Cerrar sesión</a></li>
           </>
         ) : (
           <li>
-            <a href={`${frontendUrl}/login`}>Iniciar sesión</a>
+            {/*<a href={`${frontendUrl}/login`}>Iniciar sesión</a>*/}
+            <a href={`http://localhost:5173/login`}>Iniciar sesión</a>
           </li>
         )}
       </ul>

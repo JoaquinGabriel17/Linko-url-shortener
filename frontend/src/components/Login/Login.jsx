@@ -2,19 +2,25 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
 import { useUser } from '../../context/UserContext'; // contexto de usuario
+import Loading from '../Loading/Loading';
+
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 const frontendUrl = import.meta.env.VITE_FRONTEND_URL;
 
 
 
 export default function Login() {
+ 
+  const navigate = useNavigate();
+  const { login } = useUser();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [form, setForm] = useState({
     email: '',
     password: ''
   });
-  const navigate = useNavigate();
 
-  const [error, setError] = useState('');
+
 
   const handleChange = (e) => {
     setForm({
@@ -22,11 +28,13 @@ export default function Login() {
       [e.target.name]: e.target.value
     });
   };
-  const { login } = useUser();
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
+
 
     try {
       const res = await fetch(`${backendUrl}/auth/login`, {
@@ -40,6 +48,7 @@ export default function Login() {
 
       if (!res.ok) {
         setError(data.error || 'Error al iniciar sesión');
+        setLoading(false);
         return;
       }
       login({
@@ -50,6 +59,7 @@ export default function Login() {
       });
 
       // localStorage.setItem('token', data.token);
+      setLoading(false);
       navigate('/');
     } catch (err) {
       setError('Error de red o del servidor');
@@ -58,6 +68,9 @@ export default function Login() {
 
   return (
     <div className={styles.background}>
+      {loading ? (
+  <Loading fullscreen />
+) : (
       <div className={styles.container}>
         <h2 className={styles.title}>Iniciar sesión</h2>
         <form className={styles.form} onSubmit={handleSubmit}>
@@ -82,8 +95,11 @@ export default function Login() {
           <button type="submit" className={styles.button}>Ingresar</button>
           {error && <p style={{ color: 'red', marginTop: '0.5rem' }}>{error}</p>}
         </form>
-        <a href={`${frontendUrl}/register`}>Crear una cuenta</a>
+
+        {/*<a href={`${frontendUrl}/register`}>Crear una cuenta</a>*/}
+        <a href={`http://localhost:5173/register`}>Crear una cuenta</a>
       </div>
+      )}
     </div>
   );
 }

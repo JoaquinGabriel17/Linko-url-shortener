@@ -6,6 +6,7 @@
     padding: 10px;
     border-radius: 8px;
   z-index: 999; /* Se asegura de estar por encima del contenido */
+  min-width: 500px;
 }
 .container form{
   display: flex;
