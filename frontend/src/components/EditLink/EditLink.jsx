@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import styles from './EditLink.module.css';
 import { useUser } from '../../context/UserContext';
+import Alert from '../Alert/Alert';
 
 export default function EditLink({  linkId, onClose, originalName, originalDescription, originalUrl  },onClick, ref) {
   const [name, setName] = useState(originalName || '');
@@ -8,6 +9,9 @@ export default function EditLink({  linkId, onClose, originalName, originalDescr
   const [url, setUrl] = useState(originalUrl || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [ alert, setAlert] = useState(null)
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL
 
   const {user} = useUser()
 
@@ -27,7 +31,7 @@ export default function EditLink({  linkId, onClose, originalName, originalDescr
     try {
       setLoading(true);
       setError('');
-      const response = await fetch('http://localhost:3001/links/edit', {
+      const response = await fetch(`${backendUrl}/links/edit`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -39,15 +43,30 @@ export default function EditLink({  linkId, onClose, originalName, originalDescr
       const data = await response.json();
 
       if (!response.ok) throw new Error(data.message || 'Error al editar');
-
+      setAlert({
+        type: 'info',
+        title: 'Link modificado correctamente'
+      })
       if (onClose) onClose();
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Error inesperado');
+      setAlert({
+        type: 'error',
+        title: 'Error al editar el link',
+        message: err.message || 'Error inesperado'
+      })
     } finally {
+      setAlert({
+        type: 'info',
+        title: 'Link modificado correctamente'
+      })
       setLoading(false);
     }
   };
+
+  const resolve = async(e) => {
+    setAlert(null)
+  }
 
   return (
     <div 
@@ -89,6 +108,7 @@ export default function EditLink({  linkId, onClose, originalName, originalDescr
           </button>
         </div>
       </form>
+      { alert && <Alert resolve={resolve} alert={alert} ></Alert>}
     </div>
   );
 }
