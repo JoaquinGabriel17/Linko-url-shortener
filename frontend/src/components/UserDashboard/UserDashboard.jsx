@@ -4,6 +4,7 @@ import { useUser } from '../../context/UserContext';
 import React, { useEffect, useState } from 'react';
 import Link from '../Link/Link';
 import CreateLink from '../CreateLink/CreateLink';
+import Loading from '../Loading/Loading';
 
 export default function UserDashboard(){
 
@@ -11,21 +12,29 @@ export default function UserDashboard(){
     const [links, setLinks] = useState([]);
     const [error, setError] = useState(null);
     const [createLink, setCreateLink] = useState(false)
+    const [ loading, setLoading ] = useState(false)
 
+    const backendUrl = import.meta.env.VITE_BACKEND_URL
 
     useEffect(() => {
         const fetchLinks = async () => {
+          setLoading(true)
           try {
-            const res = await fetch(`http://localhost:3001/links/links?userId=${user.userId}`, {
+            const res = await fetch(`${backendUrl}/links/links?userId=${user.userId}`, {
               headers: {
                 'Authorization': `Bearer ${user.token}`,
               },
             });
     
-            if (!res.ok) throw new Error('Error al obtener los links');
+            if (!res.ok){
+              setLoading(false)
+              throw new Error('Error al obtener los links');
+            } 
             const data = await res.json();
+            setLoading(false)
             setLinks(data);
           } catch (err) {
+            setLoading(false)
             setError(err.message);
           }
         };
@@ -45,7 +54,7 @@ export default function UserDashboard(){
         <div className={styles.container}>
             <Navbar></Navbar>
             <div className={styles.newLinkContainer}>
-            <h1>Dashboard</h1>
+            <h1>Tablero</h1>
             <button 
             className={styles.createLink}
             onClick={createLinkHandle}
@@ -56,6 +65,7 @@ export default function UserDashboard(){
             visible={createLink}></CreateLink>}
 
             </div>
+            { loading ? <Loading message='Cargando links de la cuenta'></Loading> : (
             <div className={styles.linkContainer}>
                     <ul className={styles.linkList}>
                         {links.map(link => (
@@ -72,6 +82,7 @@ export default function UserDashboard(){
                         ))}
                     </ul>
             </div>
+            )}
         </div>
     )
 }
