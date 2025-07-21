@@ -66,3 +66,9 @@
     background-color: #155ab6;
   }
   
+  .homeButton{
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 1.5rem;
+  }

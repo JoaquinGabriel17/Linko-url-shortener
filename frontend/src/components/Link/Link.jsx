@@ -5,6 +5,7 @@ import EditLink from '../EditLink/EditLink';
 import { useRef, useEffect, useState } from 'react';
 import { useUser } from '../../context/UserContext';
 import Alert from '../Alert/Alert';
+import Loading from '../Loading/Loading';
 
 
 
@@ -13,6 +14,7 @@ export default function Link({ url, name, description, shortCode, linkId, onDele
   const [showMenu, setShowMenu] = useState(false);
   const [showEditLink, setShowEditLink] = useState(false)
   const [alertData, setAlertData] = useState(null);
+  const [loading, setLoading] = useState(false)
   const menuRef = useRef(null);
   const editRef = useRef(null);
   const { user } = useUser()
@@ -60,7 +62,7 @@ export default function Link({ url, name, description, shortCode, linkId, onDele
     });
   
     if (!confirmed) return;
-  
+    setLoading(true)
     try {
       const res = await fetch(`http://localhost:3001/links/delete?linkId=${linkId}&userId=${user.userId}`, {
         method: 'DELETE',
@@ -73,29 +75,39 @@ export default function Link({ url, name, description, shortCode, linkId, onDele
       const data = await res.json();
   
       if (!res.ok) {
+        setLoading(false)
         console.error('Error al eliminar:', data.error);
-        showAlert({
+        await showAlert({
           type: 'error',
           title: 'Error al eliminar link',
           message: 'Ha ocurrido un error inesperado, el link no fue eliminado'
         })
       } else {
+        setLoading(false)
         console.log('Link eliminado:', data);
-        showAlert({
+        await showAlert({
           type: 'info',
           title: 'Link eliminado exitosamente',
-        })
+        });
         if (typeof onDelete === 'function') {
           onDelete(linkId);
         }
       }
-    } catch (err) {
+    } catch (err) { 
+      setLoading(false)
       console.error('Error de red:', err);
+      await showAlert({
+        type: 'error',
+        title: 'Error al eliminar link',
+        message: 'Ha ocurrido un error inesperado, el link no fue eliminado'
+      })
     }
   };
   
   
   //ALERTA
+
+
   const showAlert = (data) => {
     return new Promise((resolve) => {
       const wrappedResolve = (value) => {
@@ -105,7 +117,7 @@ export default function Link({ url, name, description, shortCode, linkId, onDele
       setAlertData({ ...data, resolve: wrappedResolve });
     });
   };
-  
+ 
 
 
   return (
@@ -126,10 +138,10 @@ export default function Link({ url, name, description, shortCode, linkId, onDele
             {copied ? <FaCheck className={styles.copied} /> : <FaRegCopy />}
           </span>
         </button>
-
-        <button className={styles.options} onClick={toggleMenu}>
+        { user?.userId?       <button className={styles.options} onClick={toggleMenu}>
           <FiMoreVertical />
-        </button>
+        </button>: <></>}
+
 
         {showMenu && (
           <div 
@@ -162,6 +174,7 @@ export default function Link({ url, name, description, shortCode, linkId, onDele
     </div>
   </div>
 )}
+{loading && <Loading fullscreen message='Eliminando link'></Loading>}
     </div>
   );
 }
