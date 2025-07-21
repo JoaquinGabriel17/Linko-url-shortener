@@ -4,34 +4,50 @@ import styles from './UrlForm.module.css'
 import { useUser } from '../../context/UserContext';
 import Link from '../Link/Link';
 import CreateLink from '../CreateLink/CreateLink';
-const frontendUrl = process.env.FRONTEND_URL;
+import Alert from '../Alert/Alert';
+import Loading from '../Loading/Loading';
+
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 
 export default function UrlForm() {
   const [originalUrl, setOriginalUrl] = useState('');
   const [shortUrl, setShortUrl] = useState('');
-  const [error, setError] = useState('');
+  const [showError, setShowError] = useState(null);
   const { user } = useUser();
   const [createLink, setCreateLink] = useState(false)
-  console.log(frontendUrl)
+  const [ loading, setLoading ] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setShowError(null);
+    setLoading(true)
   
     // Validación manual
     try {
       new URL(originalUrl);
     } catch {
-      return setError('URL no válida. Verificá que empiece con http:// o https://');
+      setLoading(false)
+      return setShowError({
+          type: 'error',
+          title: 'URL no válida',
+          message: 'Debes ingresar una URL válida',
+        });
     }
   
     try {
-      const res = await axios.post('http://localhost:3001/shorten', { originalUrl });
+      const res = await axios.post(`${backendUrl}/shorten`, { originalUrl });
+      setLoading(false)
+
       setShortUrl(res.data.shortUrl);
     } catch (err) {
       console.error('Error al acortar URL:', err);
-      setError(err.response?.data?.error || 'Hubo un error al acortar la URL');
+      setLoading(false)
+      setShowError({
+        type: 'error',
+        title: 'Error al guardar  link',
+        message: err.response?.data?.error || 'Hubo un error al acortar la URL',
+      });
     }
   };
   
@@ -44,8 +60,17 @@ export default function UrlForm() {
   const handleSave = async(e) => {
     e.preventDefault();
     if(user) setCreateLink(true)
-    else  setError('Debes iniciar sesión para guardar una URL')
+    else { 
+    setShowError({
+      type: 'error',
+      title: 'Error al guardar  link',
+      message: 'Debes iniciar sesión para guardar una URL',
+    });
+  }
     
+  }
+  const resolve = async(e) => {
+    setShowError(null)
   }
 
 
@@ -53,17 +78,16 @@ export default function UrlForm() {
     <div className={styles.urlFormContainer}>
      <form onSubmit={handleSubmit}>
   <input
-    type="url"
     placeholder="Pegá tu URL"
     value={originalUrl}
     onChange={(e) => setOriginalUrl(e.target.value)}
     required
   />
   <button type="submit">Acortar</button>
-  {error && <p className={styles.error}>{error}</p>}
+  {showError && <Alert alertData={showError} resolve={resolve} />}
 </form>
 
-
+      { loading && <Loading message='Acortando link'></Loading>}
       {shortUrl && (
         <div className={styles.shortUrlContainer}>
           <Link url={shortUrl}></Link>
@@ -75,7 +99,7 @@ export default function UrlForm() {
           onClick={handleSave}
         >Guardar</button>
         </div>
-        {error && <p className={styles.error}>{error}</p>}
+        {showError && <Alert alertData={showError} resolve={resolve} />}
         {createLink&&<CreateLink 
         onClose={() => setCreateLink(false)}
         urlToSave={originalUrl}
