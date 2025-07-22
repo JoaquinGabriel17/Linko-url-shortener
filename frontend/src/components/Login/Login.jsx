@@ -68,7 +68,8 @@ export default function Login() {
 
   return (
     <div className={styles.background}>
-      <a href={`${frontendUrl}`}
+      <a 
+      onClick={() => navigate('/')}
       className={styles.homeButton}
       >
         <button>Página principal</button>
@@ -102,7 +103,9 @@ export default function Login() {
         </form>
 
         {/*<a href={`${frontendUrl}/register`}>Crear una cuenta</a>*/}
-        <a href={`${frontendUrl}/register`}>Crear una cuenta</a>
+        <a
+        onClick={() => navigate('/register')}
+        >Crear una cuenta</a>
       </div>
       )}
     </div>

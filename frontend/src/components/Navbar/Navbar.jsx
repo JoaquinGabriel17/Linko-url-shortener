@@ -40,13 +40,13 @@ export default function Navbar() {
         {user?.username ? (
           <>
             {/*<li><a href={`${frontendUrl}/user`}>Cuenta</a></li>*/}
-            <li><a href={`${frontendUrl}/user`}>Tablero</a></li>
+            <li><a onClick={() => navigate('/user')}>Tablero</a></li>
             <li><a onClick={handleLogout} style={{ cursor: 'pointer' }}>Cerrar sesión</a></li>
           </>
         ) : (
           <li>
             {/*<a href={`${frontendUrl}/login`}>Iniciar sesión</a>*/}
-            <a href={`${frontendUrl}/login`}>Iniciar sesión</a>
+            <a onClick={() => navigate('/login')}>Iniciar sesión</a>
           </li>
         )}
       </ul>

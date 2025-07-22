@@ -7,7 +7,7 @@ import { useUser } from '../../context/UserContext';
 import Alert from '../Alert/Alert';
 import Loading from '../Loading/Loading';
 
-
+const backendUrl = import.meta.env.VITE_BACKEND_URL
 
 export default function Link({ url, name, description, shortCode, linkId, onDelete }) {
   const [copied, setCopied] = useState(false);
@@ -64,7 +64,7 @@ export default function Link({ url, name, description, shortCode, linkId, onDele
     if (!confirmed) return;
     setLoading(true)
     try {
-      const res = await fetch(`http://localhost:3001/links/delete?linkId=${linkId}&userId=${user.userId}`, {
+      const res = await fetch(`${backendUrl}/links/delete?linkId=${linkId}&userId=${user.userId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
