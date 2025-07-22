@@ -16,7 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use(cors({
-  origin: 'https://url-shortener-xi-lac.vercel.app', // tu dominio Vercel
+  origin: 'https://linko-nine.vercel.app', // tu dominio Vercel
   credentials: true
 }));
 
