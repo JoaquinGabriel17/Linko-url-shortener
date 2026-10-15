@@ -5,16 +5,16 @@ import Example from './components/Example/Example';
 import TopLinks from './components/TopLinks/TopLinks';
 import { useUser } from './context/userContext';
 
-
 function App() {
   const { user } = useUser();
+
   return (
     <div className={styles.container}>
-      <Navbar></Navbar>
+      <Navbar />
       <h1>Acortador de URLs de código abierto</h1>
       <UrlForm />
-      {user?.username&& <TopLinks />}
-      <Example></Example>
+      {user?.username && <TopLinks />}
+      <Example />
     </div>
   );
 }
