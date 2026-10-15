@@ -7,7 +7,7 @@ import CreateLink from '../CreateLink/CreateLink';
 import Alert from '../Alert/Alert';
 import Loading from '../Loading/Loading';
 
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
+const apiUrl = import.meta.env.VITE_API_URL;
 
 
 export default function UrlForm() {
@@ -36,7 +36,7 @@ export default function UrlForm() {
     }
   
     try {
-      const res = await axios.post(`${backendUrl}/shorten`, { originalUrl });
+      const res = await axios.post(`${apiUrl}/links/create`, { originalUrl });
       setLoading(false)
 
       setShortUrl(res.data.shortUrl);

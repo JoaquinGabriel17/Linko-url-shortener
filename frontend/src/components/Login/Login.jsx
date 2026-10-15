@@ -4,7 +4,7 @@ import styles from './Login.module.css';
 import { useUser } from '../../context/UserContext'; // contexto de usuario
 import Loading from '../Loading/Loading';
 
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
+const backendUrl = import.meta.env.VITE_API_URL;
 const frontendUrl = import.meta.env.VITE_FRONTEND_URL;
 
 

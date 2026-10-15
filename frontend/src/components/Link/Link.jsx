@@ -7,7 +7,7 @@ import { useUser } from '../../context/UserContext';
 import Alert from '../Alert/Alert';
 import Loading from '../Loading/Loading';
 
-const backendUrl = import.meta.env.VITE_BACKEND_URL
+const backendUrl = import.meta.env.VITE_API_URL
 
 export default function Link({ url, name, description, shortCode, linkId, onDelete }) {
   const [copied, setCopied] = useState(false);

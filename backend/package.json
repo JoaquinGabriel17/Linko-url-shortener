@@ -1,12 +1,15 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js",
-    "start": "node index.js"
+    "test": "vitest run",
+    "dev": "nodemon server.js",
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
@@ -18,11 +21,14 @@
     "dotenv": "^17.0.1",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongodb": "4.0",
     "mongoose": "^8.16.1",
-    "nanoid": "^5.1.5"
+    "nanoid": "^5.1.5",
+    "zod": "^4.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "mongodb-memory-server": "^10.0.0",
+    "nodemon": "^3.1.10",
+    "supertest": "^7.0.0",
+    "vitest": "^3.0.0"
   }
 }

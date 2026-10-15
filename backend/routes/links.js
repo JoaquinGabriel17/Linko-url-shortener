@@ -2,26 +2,28 @@ import express from 'express';
 import { nanoid } from 'nanoid';
 import Link from '../models/Link.js';
 import authMiddleware from '../middleware/auth.js';
+import optionalAuth from '../middleware/optionalAuth.js';
+import { env } from '../config/env.js';
 
 const router = express.Router();
 
-// Crear nuevo link
-router.post('/create',authMiddleware, async (req, res) => {
-  let { userId, originalUrl, shortCode, name, description } = req.body;
+// Crear nuevo link (anónimo o autenticado). Endpoint único de creación.
+router.post('/create', optionalAuth, async (req, res) => {
+  let { originalUrl, shortCode, name, description } = req.body;
 
   if (!originalUrl) {
     return res.status(400).json({ error: 'URL requerida' });
   }
 
   try {
-    if(!shortCode) { shortCode = nanoid(6);}
+    if (!shortCode) { shortCode = nanoid(6); }
 
     const linkData = {
       originalUrl,
       shortCode,
-      createdBy: userId,
+      createdBy: req.user?.id,
     };
-  
+
     if (name) {
       linkData.name = name;
     }
@@ -30,13 +32,13 @@ router.post('/create',authMiddleware, async (req, res) => {
     }
 
     const newLink = new Link(linkData);
-  
 
     await newLink.save();
 
     res.status(201).json({
-      message: 'Link creado exitosamente',
-      shortUrl: `${req.protocol}://${req.get('host')}/${shortCode}`,
+      shortUrl: `${env.BASE_URL}/${shortCode}`,
+      shortCode,
+      originalUrl,
     });
   } catch (error) {
     console.error('Error al crear link:', error);

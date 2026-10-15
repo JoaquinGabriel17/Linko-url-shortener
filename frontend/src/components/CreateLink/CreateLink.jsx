@@ -12,7 +12,7 @@ export default function CreateLink({ visible, urlToSave, onClose }) {
   const [error, setError] = useState('');
   const [ loading, setLoading] = useState(false)
   const [ alert, setAlert] = useState(null)
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const backendUrl = import.meta.env.VITE_API_URL;
 
 
 
@@ -82,7 +82,6 @@ export default function CreateLink({ visible, urlToSave, onClose }) {
   
     const payload = {
       originalUrl: original,
-      userId: user.userId,
       name,
       description,
     };

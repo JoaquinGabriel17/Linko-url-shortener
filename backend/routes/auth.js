@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { env } from '../config/env.js';
 
 const router = express.Router();
 
@@ -46,7 +47,7 @@ router.post('/register', async (req, res) => {
     // Generar token
     const token = jwt.sign(
       { id: newUser._id },
-      process.env.JWT_SECRET,
+      env.JWT_SECRET,
       { expiresIn: '1d' }
     );
 
@@ -93,7 +94,7 @@ router.post('/login', async (req, res) => {
     // Generar token JWT
     const token = jwt.sign(
       { id: user._id },
-      process.env.JWT_SECRET,
+      env.JWT_SECRET,
       { expiresIn: '1d' }
     );
 
