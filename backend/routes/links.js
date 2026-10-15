@@ -152,7 +152,14 @@ router.get('/', authMiddleware, async (req, res) => {
     }
 
     const links = await query.exec();
-    res.json(links);
+    // Se agrega shortUrl (mismo shape que la creación) para que el frontend no
+    // tenga que construir el enlace corto ni conocer BASE_URL.
+    res.json(
+      links.map((link) => ({
+        ...link.toObject(),
+        shortUrl: `${env.BASE_URL}/${link.shortCode}`,
+      }))
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error al obtener los links' });

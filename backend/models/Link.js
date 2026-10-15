@@ -21,13 +21,14 @@ const linkSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    // Sin defaults: si el usuario no los envía quedan vacíos (undefined) y el
+    // frontend muestra su propio fallback visual, en vez de guardar textos
+    // engañosos como si fueran datos reales.
     name: {
       type: String,
-      default: 'Linko',
     },
     description: {
       type: String,
-      default: 'No se ingresó una descripción.',
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

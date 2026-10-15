@@ -118,6 +118,12 @@ describe('GET /links', () => {
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(1);
     expect(res.body[0].originalUrl).toBe('https://example.com/a');
+    // El listado expone el enlace corto y los datos del dashboard reales.
+    expect(res.body[0].shortUrl).toBe(`${env.BASE_URL}/${res.body[0].shortCode}`);
+    expect(res.body[0].clicks).toBe(0);
+    expect(res.body[0].createdAt).toBeDefined();
+    expect(res.body[0]).not.toHaveProperty('name');
+    expect(res.body[0]).not.toHaveProperty('description');
   });
 
   it('ordena y limita con lista blanca', async () => {
