@@ -1,20 +1,29 @@
-.linkList{
-    list-style: none;
-    padding: 0;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+.linkList {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
-.container h1{
-}
-.newLinkContainer{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    padding: 20px;
 
-  }
-  .newLinkContainer button{
-    height: fit-content;
-    font-size: 1rem;
-  }
+.newLinkContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+.newLinkContainer button {
+  height: fit-content;
+  font-size: 1rem;
+}
+
+.error {
+  color: #dc3545;
+  text-align: center;
+}
+
+.empty {
+  text-align: center;
+  color: #64748b;
+}
