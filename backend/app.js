@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 
 import { env } from './config/env.js';
 import links from './routes/links.js';
@@ -8,6 +9,11 @@ import urlRoutes from './routes/urlRoutes.js';
 
 const app = express();
 
+// Render corre detrás de un proxy: confiar en el primer hop para que el IP real
+// (y por lo tanto el rate limiting) funcione.
+app.set('trust proxy', 1);
+
+app.use(helmet());
 app.use(
   cors({
     origin: env.ALLOWED_ORIGINS,
