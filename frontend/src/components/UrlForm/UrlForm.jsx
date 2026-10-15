@@ -44,7 +44,7 @@ export default function UrlForm() {
       setShowError({
         type: 'error',
         title: 'Error al guardar  link',
-        message: err.response?.data?.error || 'Hubo un error al acortar la URL',
+        message: err.response?.data?.message || err.response?.data?.error || 'Hubo un error al acortar la URL',
       });
     }
   };
