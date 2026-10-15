@@ -1,8 +1,7 @@
 import styles from './Navbar.module.css';
 import { AiFillGithub } from 'react-icons/ai';
 import { useUser } from '../../context/UserContext';
-import { useLocation, useNavigate } from 'react-router-dom';
-const frontendUrl = import.meta.env.VITE_FRONTEND_URL;
+import { useNavigate } from 'react-router-dom';
 
 
 
@@ -12,8 +11,7 @@ export default function Navbar() {
 
   
   const handleLogout = () => {
-    logout(); // limpia el usuario del contexto
-    localStorage.removeItem('token'); // elimina el token JWT
+    logout(); // limpia el usuario y el token (sessionStorage)
     navigate('/');
   };
   const handleHome = () => {

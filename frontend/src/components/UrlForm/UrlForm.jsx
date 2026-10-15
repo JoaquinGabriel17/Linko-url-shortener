@@ -1,13 +1,11 @@
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import styles from './UrlForm.module.css'
 import { useUser } from '../../context/UserContext';
 import Link from '../Link/Link';
 import CreateLink from '../CreateLink/CreateLink';
 import Alert from '../Alert/Alert';
 import Loading from '../Loading/Loading';
-
-const apiUrl = import.meta.env.VITE_API_URL;
 
 
 export default function UrlForm() {
@@ -36,7 +34,7 @@ export default function UrlForm() {
     }
   
     try {
-      const res = await axios.post(`${apiUrl}/links/create`, { originalUrl });
+      const res = await api.post('/links/create', { originalUrl });
       setLoading(false)
 
       setShortUrl(res.data.shortUrl);

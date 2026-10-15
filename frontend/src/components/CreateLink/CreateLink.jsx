@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styles from './CreateLink.module.css';
-import { useUser } from '../../context/UserContext';
+import api from '../../api';
 import Loading from '../Loading/Loading';
 import Alert from '../Alert/Alert';
 
@@ -8,11 +8,9 @@ export default function CreateLink({ visible, urlToSave, onClose }) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [url, setUrl] = useState('');
-  const { user } = useUser()
   const [error, setError] = useState('');
   const [ loading, setLoading] = useState(false)
   const [ alert, setAlert] = useState(null)
-  const backendUrl = import.meta.env.VITE_API_URL;
 
 
 
@@ -87,41 +85,21 @@ export default function CreateLink({ visible, urlToSave, onClose }) {
     };
   
     try {
-      const response = await fetch(`${backendUrl}/links/create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${user.token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-  
-      const data = await response.json();
-  
-      if (!response.ok) {
-        setLoading(false)
-        setAlert({
-          type: 'error',
-          title: 'Error al guardar link',
-          message: data.error || 'Error al crear el link.'
-        })
-    
-      } else {
-        setLoading(false)
-        setAlert({
-          type: 'info',
-          title: 'El link fue creado correctamente',
-          message: 'Ya puedes consultarlo en tu dashboard'
-        })
-        onClose();
-      }
+      await api.post('/links/create', payload);
+
+      setLoading(false)
+      setAlert({
+        type: 'info',
+        title: 'El link fue creado correctamente',
+        message: 'Ya puedes consultarlo en tu dashboard'
+      })
+      onClose();
     } catch (error) {
       setLoading(false)
-      console.error('Error de red:', error);
       setAlert({
         type: 'error',
         title: 'Error al guardar link',
-        message: 'Error de red. Intentalo de nuevo más tarde.'
+        message: error.response?.data?.error || 'Error al crear el link.'
       })
     }
   };

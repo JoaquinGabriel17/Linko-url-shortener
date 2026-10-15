@@ -1,24 +1,21 @@
 import { createContext, useContext, useState } from 'react';
+import { clearSession, getSession, setSession } from '../session';
 
 // Creamos el contexto
 export const UserContext = createContext();
 
-// Proveedor del contexto
+// Proveedor del contexto. sessionStorage es la única fuente del token.
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    // Intentamos cargar desde localStorage si ya estaba logueado
-    const saved = sessionStorage.getItem('user');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [user, setUser] = useState(() => getSession());
 
   const login = (userData) => {
     setUser(userData);
-    sessionStorage.setItem('user', JSON.stringify(userData));
+    setSession(userData);
   };
 
   const logout = () => {
     setUser(null);
-    sessionStorage.removeItem('user');
+    clearSession();
   };
 
   return (
