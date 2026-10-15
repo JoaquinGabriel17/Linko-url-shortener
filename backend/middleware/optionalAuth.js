@@ -1,21 +1,15 @@
-import jwt from 'jsonwebtoken';
-import { env } from '../config/env.js';
+import { userIdFromToken } from './token.js';
 
-// Auth opcional: si viene un token válido setea req.user; si no (o si es
-// inválido) continúa como anónimo, sin cortar la request.
+// Auth opcional: si viene un token válido (con id válido) setea req.user; si no,
+// continúa como anónimo, sin cortar la request.
 function optionalAuth(req, res, next) {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return next();
-  }
-
-  const token = authHeader.split(' ')[1];
-
-  try {
-    req.user = jwt.verify(token, env.JWT_SECRET);
-  } catch {
-    // token inválido -> sigue como anónimo
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const userId = userIdFromToken(authHeader.split(' ')[1]);
+    if (userId) {
+      req.user = { id: userId };
+    }
   }
 
   next();

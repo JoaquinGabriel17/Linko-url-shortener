@@ -1,10 +1,11 @@
 import express from 'express';
 import Link from '../models/Link.js';
+import { redirectLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
 // Redirección por short code.
-router.get('/:shortCode', async (req, res) => {
+router.get('/:shortCode', redirectLimiter, async (req, res) => {
   const { shortCode } = req.params;
 
   try {

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useUser } from '../../context/UserContext';
+import api from '../../api';
 import Link from '../Link/Link';
 import styles from './TopLinks.module.css';
 import Loading from '../Loading/Loading';
@@ -8,7 +9,6 @@ function TopLinks() {
   const [topLinks, setTopLinks] = useState([]);
   const [error, setError] = useState(null);
   const { user } = useUser();
-  const VITE_API_URL = import.meta.env.VITE_API_URL;
 
   const [loading, setLoading] = useState(false);
 
@@ -17,27 +17,19 @@ function TopLinks() {
       setLoading(true);
 
       try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`${VITE_API_URL}/links/links?limit=5&sort=clicks&userId=${user.userId}`, {
-          headers: {
-            'Authorization': `Bearer ${user.token}`,
-          },
-        });
-
-        if (!res.ok) throw new Error('Error al obtener los links');
-        const data = await res.json();
-        setTopLinks(data);
+        const res = await api.get('/links', { params: { limit: 5, sort: '-clicks' } });
+        setTopLinks(res.data);
       } catch (err) {
-        setError(err.message);
+        setError(err.response?.data?.message || err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    if (user.userId) {
+    if (user?.userId) {
       fetchTopLinks();
     }
-  }, [user.userId]);
+  }, [user?.userId]);
 
   if (loading) return <Loading message="Cargando tus links más clickeados..." />;
 

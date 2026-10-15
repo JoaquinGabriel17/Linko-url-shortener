@@ -1,6 +1,7 @@
 import Navbar from '../Navbar/Navbar'
 import styles from './UserDashboard.module.css'
 import { useUser } from '../../context/UserContext';
+import api from '../../api';
 import React, { useEffect, useState } from 'react';
 import Link from '../Link/Link';
 import CreateLink from '../CreateLink/CreateLink';
@@ -14,35 +15,23 @@ export default function UserDashboard(){
     const [createLink, setCreateLink] = useState(false)
     const [ loading, setLoading ] = useState(false)
 
-    const backendUrl = import.meta.env.VITE_API_URL
-
     useEffect(() => {
         const fetchLinks = async () => {
           setLoading(true)
           try {
-            const res = await fetch(`${backendUrl}/links/links?userId=${user.userId}`, {
-              headers: {
-                'Authorization': `Bearer ${user.token}`,
-              },
-            });
-    
-            if (!res.ok){
-              setLoading(false)
-              throw new Error('Error al obtener los links');
-            } 
-            const data = await res.json();
-            setLoading(false)
-            setLinks(data);
+            const res = await api.get('/links');
+            setLinks(res.data);
           } catch (err) {
+            setError(err.response?.data?.message || err.message);
+          } finally {
             setLoading(false)
-            setError(err.message);
           }
         };
-    
-        if (user.userId) {
+
+        if (user?.userId) {
           fetchLinks();
         }
-      }, [user.userId]);
+      }, [user?.userId]);
 
       const createLinkHandle= async (e) => {
         e.preventDefault();

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styles from './EditLink.module.css';
-import { useUser } from '../../context/UserContext';
+import api from '../../api';
 import Alert from '../Alert/Alert';
 
 export default function EditLink({  linkId, onClose, originalName, originalDescription, originalUrl  },onClick, ref) {
@@ -11,55 +11,40 @@ export default function EditLink({  linkId, onClose, originalName, originalDescr
   const [error, setError] = useState('');
   const [ alert, setAlert] = useState(null)
 
-  const backendUrl = import.meta.env.VITE_API_URL
-
-  const {user} = useUser()
-
-  const payload = {
-    userId: user.userId,
-    linkId: linkId
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if(!url.trim() && !description.trim() && !name.trim()) return alert('Debe modificar al menos un campo')
-    if(name.trim()) payload.name = name
-    if(description.trim()) payload.description = description
-    if(originalUrl.trim()) payload.originalUrl = originalUrl
+    // Solo se envían los campos modificados; el backend ignora/valida el resto.
+    const payload = {};
+    if (name.trim()) payload.name = name.trim();
+    if (description.trim()) payload.description = description.trim();
+    if (url.trim() && url.trim() !== originalUrl) payload.originalUrl = url.trim();
+
+    if (Object.keys(payload).length === 0) {
+      setAlert({
+        type: 'error',
+        title: 'No hay cambios',
+        message: 'Debe modificar al menos un campo',
+      });
+      return;
+    }
 
     try {
       setLoading(true);
       setError('');
-      const response = await fetch(`${backendUrl}/links/edit`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${user.token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.message || 'Error al editar');
+      await api.put(`/links/${linkId}`, payload);
       setAlert({
         type: 'info',
         title: 'Link modificado correctamente'
       })
       if (onClose) onClose();
     } catch (err) {
-      console.error(err);
       setAlert({
         type: 'error',
         title: 'Error al editar el link',
-        message: err.message || 'Error inesperado'
+        message: err.response?.data?.message || err.message || 'Error inesperado'
       })
     } finally {
-      setAlert({
-        type: 'info',
-        title: 'Link modificado correctamente'
-      })
       setLoading(false);
     }
   };

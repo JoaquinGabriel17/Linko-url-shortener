@@ -4,10 +4,9 @@ import { FiMoreVertical } from 'react-icons/fi';
 import EditLink from '../EditLink/EditLink';
 import { useRef, useEffect, useState } from 'react';
 import { useUser } from '../../context/UserContext';
+import api from '../../api';
 import Alert from '../Alert/Alert';
 import Loading from '../Loading/Loading';
-
-const backendUrl = import.meta.env.VITE_API_URL
 
 export default function Link({ url, name, description, shortCode, linkId, onDelete }) {
   const [copied, setCopied] = useState(false);
@@ -64,42 +63,22 @@ export default function Link({ url, name, description, shortCode, linkId, onDele
     if (!confirmed) return;
     setLoading(true)
     try {
-      const res = await fetch(`${backendUrl}/links/delete?linkId=${linkId}&userId=${user.userId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${user.token}`
-        },
-      });
-  
-      const data = await res.json();
-  
-      if (!res.ok) {
-        setLoading(false)
-        console.error('Error al eliminar:', data.error);
-        await showAlert({
-          type: 'error',
-          title: 'Error al eliminar link',
-          message: 'Ha ocurrido un error inesperado, el link no fue eliminado'
-        })
-      } else {
-        setLoading(false)
-        console.log('Link eliminado:', data);
-        await showAlert({
-          type: 'info',
-          title: 'Link eliminado exitosamente',
-        });
-        if (typeof onDelete === 'function') {
-          onDelete(linkId);
-        }
-      }
-    } catch (err) { 
+      await api.delete(`/links/${linkId}`);
+
       setLoading(false)
-      console.error('Error de red:', err);
+      await showAlert({
+        type: 'info',
+        title: 'Link eliminado exitosamente',
+      });
+      if (typeof onDelete === 'function') {
+        onDelete(linkId);
+      }
+    } catch (err) {
+      setLoading(false)
       await showAlert({
         type: 'error',
         title: 'Error al eliminar link',
-        message: 'Ha ocurrido un error inesperado, el link no fue eliminado'
+        message: err.response?.data?.message || 'Ha ocurrido un error inesperado, el link no fue eliminado'
       })
     }
   };

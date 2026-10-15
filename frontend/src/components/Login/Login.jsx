@@ -2,10 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
 import { useUser } from '../../context/UserContext'; // contexto de usuario
+import api from '../../api';
 import Loading from '../Loading/Loading';
-
-const backendUrl = import.meta.env.VITE_API_URL;
-const frontendUrl = import.meta.env.VITE_FRONTEND_URL;
 
 
 
@@ -37,20 +35,9 @@ export default function Login() {
 
 
     try {
-      const res = await fetch(`${backendUrl}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(form)
-      });
-      const data = await res.json();
+      const res = await api.post('/auth/login', form);
+      const data = res.data;
 
-      if (!res.ok) {
-        setError(data.error || 'Error al iniciar sesión');
-        setLoading(false);
-        return;
-      }
       login({
         token: data.token,
         username: data.user.username,
@@ -58,11 +45,11 @@ export default function Login() {
         userId: data.user.id
       });
 
-      // localStorage.setItem('token', data.token);
       setLoading(false);
       navigate('/');
     } catch (err) {
-      setError('Error de red o del servidor');
+      setLoading(false);
+      setError(err.response?.data?.error || 'Error al iniciar sesión');
     }
   };
 

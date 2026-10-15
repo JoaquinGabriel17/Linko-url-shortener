@@ -3,8 +3,7 @@ import styles from './Register.module.css';
 import { useState } from 'react';
 import { useUser } from '../../context/UserContext';
 import { useNavigate } from 'react-router-dom';
-const backendUrl = import.meta.env.VITE_API_URL;
-const frontendUrl = import.meta.env.VITE_FRONTEND_URL
+import api from '../../api';
 
 export default function Register() {
 
@@ -12,7 +11,7 @@ export default function Register() {
   const { login } = useUser()
   const  navigate  = useNavigate()
   const [form, setForm] = useState({
-    name: '',
+    username: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -30,7 +29,6 @@ export default function Register() {
     setAlertData(null);
 
     if(form.password !== form.confirmPassword) {
-      console.log(form)
       setAlertData({
       type: 'error',
       title: 'Error en los datos de usuario',
@@ -40,23 +38,13 @@ export default function Register() {
   }
 
     try {
-      const res = await fetch(`${backendUrl}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(form)
+      const res = await api.post('/auth/register', {
+        username: form.username,
+        email: form.email,
+        password: form.password,
       });
-      const data = await res.json();
+      const data = res.data;
 
-      if (!res.ok) {
-        setAlertData({
-          type: 'error',
-          title: 'Error al crear usuario',
-          message: data.error || 'El servidor devolvió un error, por favor inténtelo mas tarde'
-        })
-        return;
-      }
       login({
         token: data.token,
         username: data.user.username,
@@ -68,14 +56,12 @@ export default function Register() {
         title: 'Usuario creado con éxito'
       })
 
-      // localStorage.setItem('token', data.token);
       navigate('/');
     } catch (err) {
-      console.log(err)
       setAlertData({
         type: 'error',
         title: 'Error al crear usuario',
-        message: 'Error de red o del servidor, por favor intente mas tarde'
+        message: err.response?.data?.error || 'El servidor devolvió un error, por favor inténtelo mas tarde'
       })
     }
   };
@@ -96,9 +82,9 @@ export default function Register() {
       <form className={styles.form}>
         <input 
         type="text" 
-        name='name'
+        name='username'
         placeholder="Nombre"
-        value={form.name}
+        value={form.username}
         onChange={handleChange}
         required
         className={styles.input} />
