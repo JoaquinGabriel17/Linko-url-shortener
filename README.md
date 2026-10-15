@@ -92,6 +92,8 @@ La app correrá en `http://localhost:5173`.
 | `RATE_LIMIT_CREATE_MAX` | Máx. requests por ventana en la creación de links | No (default: `30`) |
 | `RATE_LIMIT_REDIRECT_WINDOW_MS` | Ventana del rate limiting de la redirección (ms) | No (default: `60000`) |
 | `RATE_LIMIT_REDIRECT_MAX` | Máx. requests por ventana en la redirección | No (default: `120`) |
+| `SHORT_CODE_LENGTH` | Longitud de los códigos cortos autogenerados (3-30) | No (default: `6`) |
+| `SHORT_CODE_MAX_RETRIES` | Reintentos ante colisión del índice único de `shortCode` (1-20) | No (default: `5`) |
 
 > La validación se hace con **zod** al arrancar (`backend/config/env.js`): si falta o es inválida alguna variable requerida, el proceso **sale con código 1** y un mensaje claro. Para generar un `JWT_SECRET` seguro: `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"`.
 
@@ -125,10 +127,10 @@ La app correrá en `http://localhost:5173`.
 
 | Método | Ruta | Descripción | Requiere JWT |
 |--------|------|-------------|--------------|
-| `POST` | `/links/create` | Endpoint único de creación. Body: `{ "originalUrl", "shortCode?", "name?", "description?" }`. Respuesta: `{ shortUrl, shortCode, originalUrl }` | Opcional |
+| `POST` | `/links/create` | Endpoint único de creación. Body: `{ "originalUrl", "shortCode?", "name?", "description?", "forceNew?" }`. Respuesta: `{ shortUrl, shortCode, originalUrl }` (agrega `deduplicated: true` cuando deduplica) | Opcional |
 | `GET` | `/:shortCode` | Redirige (302) a la URL original e incrementa `clicks` | No |
 | `GET` | `/links` | Lista los links del usuario autenticado. Query: `?sort=clicks\|createdAt` (prefijo `-` para desc), `?limit=<n>` (tope 100) | Sí |
-| `PUT` | `/links/:id` | Edita un link propio. Body: `{ "name?", "description?", "originalUrl?" }` (solo http/https) | Sí |
+| `PUT` | `/links/:id` | Edita un link propio. Body: `{ "name?", "description?", "originalUrl?" }` (solo http/https). El `shortCode` **no** se puede modificar | Sí |
 | `PATCH` | `/links/:id` | Igual que `PUT` | Sí |
 | `DELETE` | `/links/:id` | Elimina un link propio | Sí |
 | `POST` | `/auth/register` | Registrar usuario. Body: `{ "username", "email", "password" }` (password ≥ 8) | No |
@@ -137,6 +139,16 @@ La app correrá en `http://localhost:5173`.
 > Con JWT válido, `POST /links/create` guarda el link asociado al usuario; sin token, lo crea como anónimo.
 > El dueño siempre se toma del JWT (`req.user.id`), nunca del body/query. Si el link no pertenece al usuario (o no existe) se responde **404**.
 > El backend usa `helmet`, `trust proxy` y rate limiting (`express-rate-limit`); los intentos fallidos de login cuentan, los exitosos no.
+
+## Códigos cortos, alias, validación y deduplicación
+
+Toda la lógica vive en servicios compartidos (`backend/services/`) y se usa tanto en la creación como en la edición:
+
+- **Generación de códigos** (`services/shortCode.js`): códigos base62 (`0-9A-Za-z`) con `nanoid`, longitud configurable (`SHORT_CODE_LENGTH`). Se descartan los códigos que coinciden con un alias reservado. Ante una colisión del índice único de `shortCode` (`E11000`) se reintenta con un código nuevo hasta `SHORT_CODE_MAX_RETRIES`; si se agotan, se responde **503** (nunca **500**). No se usa `Math.random()`.
+- **Alias** (`services/alias.js`): el campo `shortCode` aceptado en la creación es un alias. Charset `[a-zA-Z0-9_-]`, longitud 3-30, y lista de reservadas case-insensitive (`api`, `admin`, `login`, `register`, `links`, `auth`, `shorten`, rutas reales y de infraestructura). Un alias ya usado responde **409**; inválido o reservado, **400**. Los alias son **sensibles a mayúsculas** (`miAlias` ≠ `mialias`); la comprobación de reservadas es **insensible**. Solo usuarios autenticados pueden enviar alias (anónimo con alias → **401**). El `shortCode` no se modifica en la edición.
+- **Validación de URL** (`services/url.js`): solo `http:`/`https:`, máximo 2048 caracteres (también sobre la forma normalizada), sin credenciales embebidas y sin auto-referencia (hostname de `BASE_URL` o de `ALLOWED_ORIGINS`). Se rechazan `javascript:`, `data:`, `file:`, `ftp:`, etc. La validación se aplica en la creación y, si cambia `originalUrl`, en la edición. El modelo `Link` valida además `originalUrl` como defensa en profundidad.
+- **Deduplicación**: si un usuario autenticado acorta la misma URL normalizada **sin** alias, sin `forceNew` y sin `name`/`description`, se devuelve el link existente con **200** (`deduplicated: true`) en vez de crear uno nuevo (**201**). `forceNew: true` fuerza uno nuevo. Los anónimos no se deduplican.
+- **Validación de entrada**: todos los endpoints de `links.js` validan body, params (`:id` como ObjectId) y query (`sort`/`limit`) con **zod**. Un id malformado responde **404**, nunca un error de cast.
 
 ## Conexión frontend ↔ backend en desarrollo
 

@@ -3,10 +3,13 @@ import styles from './CreateLink.module.css';
 import api from '../../api';
 import Loading from '../Loading/Loading';
 import Alert from '../Alert/Alert';
+import { useUser } from '../../context/UserContext';
 
 export default function CreateLink({ visible, urlToSave, onClose }) {
+  const { user } = useUser();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [alias, setAlias] = useState('');
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
   const [ loading, setLoading] = useState(false)
@@ -83,6 +86,8 @@ export default function CreateLink({ visible, urlToSave, onClose }) {
       name,
       description,
     };
+    // El alias solo lo acepta el backend para usuarios autenticados.
+    if (alias.trim()) payload.shortCode = alias.trim();
   
     try {
       await api.post('/links/create', payload);
@@ -99,7 +104,10 @@ export default function CreateLink({ visible, urlToSave, onClose }) {
       setAlert({
         type: 'error',
         title: 'Error al guardar link',
-        message: error.response?.data?.error || 'Error al crear el link.'
+        message:
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          'Error al crear el link.'
       })
     }
   };
@@ -149,6 +157,15 @@ export default function CreateLink({ visible, urlToSave, onClose }) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
+
+        {user && (
+          <input
+            type='text'
+            placeholder='Alias personalizado (opcional)'
+            value={alias}
+            onChange={(e) => setAlias(e.target.value)}
+          />
+        )}
 
         <button type='submit'>Crear Link</button>
 

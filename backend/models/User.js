@@ -1,11 +1,12 @@
 import mongoose from'mongoose';
+import { nanoid } from 'nanoid';
 
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
     unique: true,
     trim: true,
-    default: () => `usuario${Math.floor(Math.random() * 10000000)}`
+    default: () => `usuario${nanoid(8)}`
   },
   email: {
     type: String,

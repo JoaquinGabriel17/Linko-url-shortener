@@ -8,7 +8,9 @@ process.env.PORT = process.env.PORT || '10000';
 // `base`). Por eso acá se sobreescribe sin condicionar, para que config/env.js
 // vea una URL válida. En producción (node server.js) Vite no interviene.
 process.env.BASE_URL = 'http://localhost:10000';
-process.env.ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS || 'http://localhost:5173';
+// Segundo origen para poder testear la auto-referencia contra los orígenes del
+// frontend, no solo contra BASE_URL.
+process.env.ALLOWED_ORIGINS = 'http://localhost:5173,https://frontend.example.com';
 
 // Límites bajos para poder disparar el 429 en los tests.
 process.env.RATE_LIMIT_WINDOW_MS = '60000';
@@ -16,3 +18,6 @@ process.env.RATE_LIMIT_AUTH_MAX = '3';
 process.env.RATE_LIMIT_CREATE_MAX = '5';
 process.env.RATE_LIMIT_REDIRECT_WINDOW_MS = '60000';
 process.env.RATE_LIMIT_REDIRECT_MAX = '10';
+
+process.env.SHORT_CODE_LENGTH = process.env.SHORT_CODE_LENGTH || '6';
+process.env.SHORT_CODE_MAX_RETRIES = process.env.SHORT_CODE_MAX_RETRIES || '5';
