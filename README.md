@@ -84,8 +84,14 @@ La app correrá en `http://localhost:5173`.
 | `PORT` | Puerto del servidor | No (default: `10000`) |
 | `MONGO_URI` | URI de conexión a MongoDB | Sí |
 | `JWT_SECRET` | Secreto para firmar tokens JWT | Sí |
+| `JWT_EXPIRES_IN` | Vigencia del token (ej: `1d`, `12h`, `30m`) | No (default: `1d`) |
 | `BASE_URL` | URL pública del backend; con ella se construye cada `shortUrl`. Sin barra final | Sí |
 | `ALLOWED_ORIGINS` | Orígenes permitidos por CORS, separados por coma | Sí |
+| `RATE_LIMIT_WINDOW_MS` | Ventana del rate limiting de `/auth` y creación (ms) | No (default: `900000`) |
+| `RATE_LIMIT_AUTH_MAX` | Máx. requests por ventana en `/auth/login` y `/auth/register` | No (default: `10`) |
+| `RATE_LIMIT_CREATE_MAX` | Máx. requests por ventana en la creación de links | No (default: `30`) |
+| `RATE_LIMIT_REDIRECT_WINDOW_MS` | Ventana del rate limiting de la redirección (ms) | No (default: `60000`) |
+| `RATE_LIMIT_REDIRECT_MAX` | Máx. requests por ventana en la redirección | No (default: `120`) |
 
 > La validación se hace con **zod** al arrancar (`backend/config/env.js`): si falta o es inválida alguna variable requerida, el proceso **sale con código 1** y un mensaje claro.
 
@@ -121,13 +127,16 @@ La app correrá en `http://localhost:5173`.
 |--------|------|-------------|--------------|
 | `POST` | `/links/create` | Endpoint único de creación. Body: `{ "originalUrl", "shortCode?", "name?", "description?" }`. Respuesta: `{ shortUrl, shortCode, originalUrl }` | Opcional |
 | `GET` | `/:shortCode` | Redirige (302) a la URL original e incrementa `clicks` | No |
-| `GET` | `/links/links?userId=<id>` | Obtener links de un usuario | Sí |
-| `DELETE` | `/links/delete?linkId=<id>&userId=<id>` | Eliminar un link | Sí |
-| `PUT` | `/links/edit` | Editar un link. Body: `{ "linkId", "userId", "name?", "description?", "originalUrl?" }` | Sí |
-| `POST` | `/auth/register` | Registrar usuario. Body: `{ "username", "email", "password" }` | No |
+| `GET` | `/links` | Lista los links del usuario autenticado. Query: `?sort=clicks\|createdAt` (prefijo `-` para desc), `?limit=<n>` (tope 100) | Sí |
+| `PUT` | `/links/:id` | Edita un link propio. Body: `{ "name?", "description?", "originalUrl?" }` (solo http/https) | Sí |
+| `PATCH` | `/links/:id` | Igual que `PUT` | Sí |
+| `DELETE` | `/links/:id` | Elimina un link propio | Sí |
+| `POST` | `/auth/register` | Registrar usuario. Body: `{ "username", "email", "password" }` (password ≥ 8) | No |
 | `POST` | `/auth/login` | Iniciar sesión. Body: `{ "email", "password" }` | No |
 
 > Con JWT válido, `POST /links/create` guarda el link asociado al usuario; sin token, lo crea como anónimo.
+> El dueño siempre se toma del JWT (`req.user.id`), nunca del body/query. Si el link no pertenece al usuario (o no existe) se responde **404**.
+> El backend usa `helmet`, `trust proxy` y rate limiting (`express-rate-limit`); los intentos fallidos de login cuentan, los exitosos no.
 
 ## Conexión frontend ↔ backend en desarrollo
 
