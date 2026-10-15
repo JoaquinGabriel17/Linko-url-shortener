@@ -37,6 +37,8 @@ const schema = z.object({
   RATE_LIMIT_CREATE_MAX: z.coerce.number().int().positive().default(30),
   RATE_LIMIT_REDIRECT_WINDOW_MS: z.coerce.number().int().positive().default(60000),
   RATE_LIMIT_REDIRECT_MAX: z.coerce.number().int().positive().default(120),
+  SHORT_CODE_LENGTH: z.coerce.number().int().min(3).max(30).default(6),
+  SHORT_CODE_MAX_RETRIES: z.coerce.number().int().min(1).max(20).default(5),
 });
 
 const parsed = schema.safeParse(process.env);
