@@ -5,7 +5,9 @@ export default defineConfig({
   test: {
     environment: 'node',
     setupFiles: ['./tests/setup.js'],
-    hookTimeout: 60000,
-    testTimeout: 60000,
+    // holgado para la primera descarga del binario de mongodb-memory-server
+    // (~600 MB) en un runner de CI en frío, que puede acercarse a los 60s.
+    hookTimeout: 120000,
+    testTimeout: 120000,
   },
 });

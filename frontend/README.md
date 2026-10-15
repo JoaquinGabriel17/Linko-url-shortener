@@ -1,12 +1,53 @@
-# React + Vite
+# Linko — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+SPA en React + Vite para acortar URLs, gestionar enlaces y autenticarse. Consume la API del backend (ver el [README raíz](../README.md)).
 
-Currently, two official plugins are available:
+## Requisitos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js 24.x (hay un `.nvmrc`)
 
-## Expanding the ESLint configuration
+## Instalación
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+```
+
+## Configuración
+
+Creá `frontend/.env` a partir de `.env.example`:
+
+```bash
+VITE_API_URL=http://localhost:10000
+```
+
+`VITE_API_URL` es la URL base del backend y la usa el único cliente axios (`src/api.js`). Se inyecta en **build-time** por Vite, así que hay que recompilar al cambiarla.
+
+## Ejecución local
+
+```bash
+npm run dev        # http://localhost:5173
+```
+
+Asegurate de que el backend permita el origen `http://localhost:5173` en su `ALLOWED_ORIGINS`.
+
+## Scripts
+
+| Comando | Descripción |
+|---------|-------------|
+| `npm run dev` | Vite dev server con HMR |
+| `npm run build` | Build de producción en `dist/` |
+| `npm run preview` | Sirve el build de producción localmente |
+| `npm run lint` | ESLint |
+
+## Estructura
+
+```
+src/
+├── components/   # Vistas y componentes (UrlForm, UserDashboard, Login, ...)
+├── context/      # Sesión de usuario (UserContext + UserProvider)
+├── lib/          # Utilidades (useCopy)
+├── api.js        # Cliente axios + manejo de errores y 401
+├── session.js    # Persistencia del token
+├── App.jsx       # Home
+└── main.jsx      # Router y montaje
+```

@@ -119,6 +119,31 @@ describe('GET /:shortCode', () => {
     link = await Link.findOne({ shortCode });
     expect(link.clicks).toBe(2);
   });
+
+  it('devuelve 404 (sin tocar la DB) si el shortCode es malformado', async () => {
+    // Longitud por debajo del mínimo y charset fuera de [a-zA-Z0-9_-].
+    const tooShort = await request(app).get('/ab');
+    const badChars = await request(app).get('/@@@');
+
+    expect(tooShort.status).toBe(404);
+    expect(badChars.status).toBe(404);
+    expect(await Link.countDocuments()).toBe(0);
+  });
+
+  it('devuelve 429 al superar el límite de redirecciones', async () => {
+    // RATE_LIMIT_REDIRECT_MAX = 10
+    const created = await request(app)
+      .post('/links/create')
+      .send({ originalUrl: 'https://example.com/limit' });
+    const { shortCode } = created.body;
+
+    for (let i = 0; i < 10; i++) {
+      await request(app).get(`/${shortCode}`);
+    }
+
+    const res = await request(app).get(`/${shortCode}`);
+    expect(res.status).toBe(429);
+  });
 });
 
 describe('GET /links', () => {
@@ -328,6 +353,41 @@ describe('Alias personalizado', () => {
     expect(res.status).toBe(401);
     expect(await Link.countDocuments()).toBe(0);
   });
+
+  it('distingue alias por casing y los persiste como links distintos', async () => {
+    const token = makeToken(new mongoose.Types.ObjectId());
+
+    const lower = await request(app)
+      .post('/links/create')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ originalUrl: 'https://example.com/lower', shortCode: 'camelCase1' });
+    const upper = await request(app)
+      .post('/links/create')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ originalUrl: 'https://example.com/upper', shortCode: 'camelcase1' });
+
+    expect(lower.status).toBe(201);
+    expect(upper.status).toBe(201);
+    expect(lower.body.shortCode).toBe('camelCase1');
+    expect(upper.body.shortCode).toBe('camelcase1');
+    expect(await Link.countDocuments()).toBe(2);
+  });
+
+  it('acepta un alias de 30 caracteres y rechaza uno de 31', async () => {
+    const token = makeToken(new mongoose.Types.ObjectId());
+
+    const ok = await request(app)
+      .post('/links/create')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ originalUrl: 'https://example.com/largo', shortCode: 'a'.repeat(30) });
+    expect(ok.status).toBe(201);
+
+    const tooLong = await request(app)
+      .post('/links/create')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ originalUrl: 'https://example.com/largo2', shortCode: 'a'.repeat(31) });
+    expect(tooLong.status).toBe(400);
+  });
 });
 
 describe('Colisión de código', () => {
@@ -447,6 +507,34 @@ describe('Deduplicación', () => {
     expect(first.status).toBe(201);
     expect(second.status).toBe(201);
     expect(await Link.countDocuments()).toBe(2);
+  });
+
+  it('no deduplica entre usuarios: cada uno conserva su propio enlace', async () => {
+    const userA = new mongoose.Types.ObjectId();
+    const userB = new mongoose.Types.ObjectId();
+
+    const a = await request(app)
+      .post('/links/create')
+      .set('Authorization', `Bearer ${makeToken(userA)}`)
+      .send({ originalUrl: 'https://example.com/compartida' });
+    const b = await request(app)
+      .post('/links/create')
+      .set('Authorization', `Bearer ${makeToken(userB)}`)
+      .send({ originalUrl: 'https://example.com/compartida' });
+
+    expect(a.status).toBe(201);
+    expect(b.status).toBe(201);
+    // Ni recibe el código del otro ni se marca como deduplicado.
+    expect(b.body.shortCode).not.toBe(a.body.shortCode);
+    expect(b.body.deduplicated).toBeUndefined();
+
+    // Cada usuario conserva exactamente un enlace, con su propio código.
+    const aLink = await Link.findOne({ createdBy: userA });
+    const bLink = await Link.findOne({ createdBy: userB });
+    expect(aLink.shortCode).toBe(a.body.shortCode);
+    expect(bLink.shortCode).toBe(b.body.shortCode);
+    expect(await Link.countDocuments({ createdBy: userA })).toBe(1);
+    expect(await Link.countDocuments({ createdBy: userB })).toBe(1);
   });
 });
 
