@@ -6,3 +6,7 @@ dist/
 build/
 .DS_Store
 *.log
+aprendiendo-docker.md
+opencode.json
+.agents
+prompt-no-tocar.md
