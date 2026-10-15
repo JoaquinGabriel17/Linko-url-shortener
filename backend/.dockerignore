@@ -1,0 +1,17 @@
+# No copiar a la imagen:
+node_modules
+npm-debug.log*
+
+# Secretos/entorno local (se inyectan por variables de entorno en runtime)
+.env
+.env.*
+
+# Solo hacen falta para desarrollo/tests
+tests
+coverage
+vitest.config.js
+
+# Metadatos del repo
+.git
+.gitignore
+*.md

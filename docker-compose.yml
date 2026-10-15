@@ -1,0 +1,49 @@
+# Levanta la API + MongoDB con:  docker compose up --build
+#
+# API_PORT es la única fuente de verdad del puerto: se usa para publicar en el
+# host, para PORT dentro del contenedor y para construir BASE_URL, de modo que
+# los enlaces cortos siempre apunten al puerto correcto.
+#
+# MongoDB NO publica su puerto al host (solo accesible por la red interna de
+# compose) y persiste en el volumen nombrado `mongo-data`.
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  api:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      PORT: "${API_PORT:-10000}"
+      # Nombre del servicio de Mongo dentro de la red de compose (no localhost).
+      MONGO_URI: "mongodb://mongo:27017/linko"
+      # ⚠️ SECRETO SOLO PARA DESARROLLO LOCAL. Es público y predecible: NO sirve
+      # para producción. Definí JWT_SECRET (>=32 chars) o copiá .env.example.
+      JWT_SECRET: "${JWT_SECRET:-dev-only-insecure-secret-do-not-use-in-production-0123456789}"
+      BASE_URL: "http://localhost:${API_PORT:-10000}"
+      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-http://localhost:5173}"
+    ports:
+      - "${API_PORT:-10000}:${API_PORT:-10000}"
+    healthcheck:
+      # Verifica que la API responda (ver limitación en backend/Dockerfile).
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:$${PORT}/ >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  mongo-data:
