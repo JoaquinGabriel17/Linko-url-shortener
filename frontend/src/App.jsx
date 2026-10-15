@@ -3,7 +3,7 @@ import styles from './App.module.css';
 import Navbar from './components/Navbar/Navbar';
 import Example from './components/Example/Example';
 import TopLinks from './components/TopLinks/TopLinks';
-import { useUser } from './context/UserContext';
+import { useUser } from './context/userContext';
 
 
 function App() {

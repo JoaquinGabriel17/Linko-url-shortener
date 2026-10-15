@@ -1,7 +1,7 @@
 import Alert from '../Alert/Alert';
 import styles from './Register.module.css';
 import { useState } from 'react';
-import { useUser } from '../../context/UserContext';
+import { useUser } from '../../context/userContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 

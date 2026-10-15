@@ -3,7 +3,7 @@ import { FaRegCopy, FaCheck } from 'react-icons/fa';
 import { FiMoreVertical } from 'react-icons/fi';
 import EditLink from '../EditLink/EditLink';
 import { useRef, useEffect, useState } from 'react';
-import { useUser } from '../../context/UserContext';
+import { useUser } from '../../context/userContext';
 import api from '../../api';
 import Alert from '../Alert/Alert';
 import Loading from '../Loading/Loading';

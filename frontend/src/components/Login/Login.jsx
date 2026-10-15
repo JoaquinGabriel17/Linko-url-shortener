@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
-import { useUser } from '../../context/UserContext'; // contexto de usuario
+import { useUser } from '../../context/userContext';
 import api from '../../api';
 import Loading from '../Loading/Loading';
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useUser } from '../../context/UserContext';
+import { useUser } from '../../context/userContext';
 import api from '../../api';
 import Link from '../Link/Link';
 import styles from './TopLinks.module.css';

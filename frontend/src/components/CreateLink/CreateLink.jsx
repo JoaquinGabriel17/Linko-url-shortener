@@ -3,7 +3,7 @@ import styles from './CreateLink.module.css';
 import api from '../../api';
 import Loading from '../Loading/Loading';
 import Alert from '../Alert/Alert';
-import { useUser } from '../../context/UserContext';
+import { useUser } from '../../context/userContext';
 
 export default function CreateLink({ visible, urlToSave, onClose }) {
   const { user } = useUser();

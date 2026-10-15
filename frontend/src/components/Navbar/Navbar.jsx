@@ -1,6 +1,6 @@
 import styles from './Navbar.module.css';
 import { AiFillGithub } from 'react-icons/ai';
-import { useUser } from '../../context/UserContext';
+import { useUser } from '../../context/userContext';
 import { useNavigate } from 'react-router-dom';
 
 

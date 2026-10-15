@@ -1,6 +1,6 @@
 import Navbar from '../Navbar/Navbar'
 import styles from './UserDashboard.module.css'
-import { useUser } from '../../context/UserContext';
+import { useUser } from '../../context/userContext';
 import api from '../../api';
 import React, { useEffect, useState } from 'react';
 import Link from '../Link/Link';

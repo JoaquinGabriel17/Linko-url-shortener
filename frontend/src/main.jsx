@@ -5,7 +5,7 @@ import App from './App';
 import Login from './components/Login/Login';
 import Register from './components/Register/Register';
 import './main.css'; // <--- IMPORTANTE
-import { UserProvider } from './context/UserContext';
+import { UserProvider } from './context/UserProvider';
 import UserDashboard from './components/UserDashboard/UserDashboard';
 
 
