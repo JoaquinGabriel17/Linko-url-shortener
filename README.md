@@ -1,0 +1,223 @@
+# Linko — Acortador de URLs
+
+Acortador de URLs con autenticación de usuarios, dashboard para gestionar enlaces y redirección automática.
+
+## Stack
+
+| Capa | Tecnología |
+|------|-----------|
+| Backend | Node.js, Express 5, MongoDB, Mongoose, JWT, bcryptjs |
+| Frontend | React 19, Vite 7, React Router DOM 7, Axios |
+| Despliegue | Render (backend), Vercel (frontend) |
+
+## Estructura del proyecto
+
+```
+Linko-url-shortener/
+├── backend/              # API REST (Express + MongoDB)
+│   ├── app.js            # Crea y exporta la app Express (sin listen)
+│   ├── server.js         # Valida env, conecta a Mongo y hace listen
+│   ├── config/           # Validación de variables de entorno (zod)
+│   ├── middleware/       # auth (JWT obligatorio) y optionalAuth
+│   ├── models/           # Modelos Mongoose (Link, User)
+│   ├── routes/           # Rutas (urlRoutes, links, auth)
+│   ├── tests/            # Tests (Vitest + supertest + mongodb-memory-server)
+│   └── package.json
+├── frontend/             # SPA (React + Vite)
+│   ├── src/
+│   │   ├── components/   # Componentes React
+│   │   ├── context/      # Context API (UserContext)
+│   │   └── App.jsx
+│   ├── vite.config.js
+│   ├── vercel.json       # Config de despliegue (SPA routing)
+│   └── package.json
+└── package-lock.json     # Lockfile raíz (sin workspaces)
+```
+
+## Requisitos previos
+
+- **Node.js** 24.x (LTS) — hay un `.nvmrc` en `backend/` y `frontend/`
+- **MongoDB** — local o [MongoDB Atlas](https://www.mongodb.com/atlas) (tier gratuito)
+
+## Instalación
+
+### Backend
+
+```bash
+cd backend
+npm install
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+```
+
+## Cómo levantar el proyecto
+
+### Backend (desarrollo)
+
+```bash
+cd backend
+npm run dev
+```
+
+El servidor correrá en `http://localhost:10000` (o el puerto definido en `PORT`).
+
+### Frontend (desarrollo)
+
+```bash
+cd frontend
+npm run dev
+```
+
+La app correrá en `http://localhost:5173`.
+
+## Variables de entorno
+
+### Backend (`backend/.env`)
+
+| Variable | Descripción | Requerida |
+|----------|-------------|-----------|
+| `PORT` | Puerto del servidor | No (default: `10000`) |
+| `MONGO_URI` | URI de conexión a MongoDB | Sí |
+| `JWT_SECRET` | Secreto para firmar tokens JWT | Sí |
+| `BASE_URL` | URL pública del backend; con ella se construye cada `shortUrl`. Sin barra final | Sí |
+| `ALLOWED_ORIGINS` | Orígenes permitidos por CORS, separados por coma | Sí |
+
+> La validación se hace con **zod** al arrancar (`backend/config/env.js`): si falta o es inválida alguna variable requerida, el proceso **sale con código 1** y un mensaje claro.
+
+### Frontend (`frontend/.env`)
+
+| Variable | Descripción | Requerida |
+|----------|-------------|-----------|
+| `VITE_API_URL` | URL base del backend | Sí |
+| `VITE_FRONTEND_URL` | URL pública del frontend (usada en Register, Navbar, Login) | Sí |
+
+## Scripts disponibles
+
+### Backend
+
+| Comando | Descripción |
+|---------|-------------|
+| `npm run dev` | Inicia el servidor con nodemon (hot-reload) |
+| `npm start` | Inicia el servidor con node |
+| `npm test` | Ejecuta los tests (Vitest) |
+
+### Frontend
+
+| Comando | Descripción |
+|---------|-------------|
+| `npm run dev` | Inicia Vite dev server |
+| `npm run build` | Genera build de producción en `dist/` |
+| `npm run preview` | Sirve el build de producción localmente |
+| `npm run lint` | Ejecuta ESLint |
+
+## Endpoints API
+
+| Método | Ruta | Descripción | Requiere JWT |
+|--------|------|-------------|--------------|
+| `POST` | `/links/create` | Endpoint único de creación. Body: `{ "originalUrl", "shortCode?", "name?", "description?" }`. Respuesta: `{ shortUrl, shortCode, originalUrl }` | Opcional |
+| `GET` | `/:shortCode` | Redirige (302) a la URL original e incrementa `clicks` | No |
+| `GET` | `/links/links?userId=<id>` | Obtener links de un usuario | Sí |
+| `DELETE` | `/links/delete?linkId=<id>&userId=<id>` | Eliminar un link | Sí |
+| `PUT` | `/links/edit` | Editar un link. Body: `{ "linkId", "userId", "name?", "description?", "originalUrl?" }` | Sí |
+| `POST` | `/auth/register` | Registrar usuario. Body: `{ "username", "email", "password" }` | No |
+| `POST` | `/auth/login` | Iniciar sesión. Body: `{ "email", "password" }` | No |
+
+> Con JWT válido, `POST /links/create` guarda el link asociado al usuario; sin token, lo crea como anónimo.
+
+## Conexión frontend ↔ backend en desarrollo
+
+El backend permite los orígenes definidos en `ALLOWED_ORIGINS` (lista separada por coma). Para desarrollo local, incluí el origen de Vite:
+
+```
+ALLOWED_ORIGINS=http://localhost:5173,https://url-shortener-xi-lac.vercel.app
+```
+
+En `frontend/.env`, la variable `VITE_API_URL` debe apuntar al backend local:
+
+```
+VITE_API_URL=http://localhost:10000
+```
+
+## Ejemplo de uso
+
+### Registrar usuario
+
+```bash
+curl -X POST http://localhost:10000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"testuser","email":"test@example.com","password":"password123"}'
+```
+
+### Login (guardar token)
+
+```bash
+curl -X POST http://localhost:10000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"password123"}'
+```
+
+Guarda el `token` de la respuesta para los siguientes pasos.
+
+### Acortar URL (anónimo)
+
+```bash
+curl -X POST http://localhost:10000/links/create \
+  -H "Content-Type: application/json" \
+  -d '{"originalUrl":"https://www.ejemplo.com/articulo-largo"}'
+```
+
+### Crear link autenticado
+
+```bash
+curl -X POST http://localhost:10000/links/create \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TU_TOKEN>" \
+  -d '{"originalUrl":"https://www.ejemplo.com","name":"Mi enlace"}'
+```
+
+### Visitar el short code
+
+```bash
+curl http://localhost:10000/<SHORT_CODE>
+```
+
+Redirige a la URL original.
+
+## Obtener MONGO_URI
+
+### MongoDB local
+
+Si tenés MongoDB instalado localmente:
+
+```
+MONGO_URI=mongodb://localhost:27017/linko
+```
+
+### MongoDB Atlas
+
+1. Crear cuenta gratuita en [mongodb.com/atlas](https://www.mongodb.com/atlas)
+2. Crear cluster (tier gratuito M0)
+3. En **Database Access**, crear un usuario con contraseña
+4. En **Network Access**, agregar `0.0.0.0/0` (allow from anywhere) o tu IP
+5. En **Database**, click en **Connect** → **Drivers** → copiar URI
+6. Reemplazar `<password>` y `<dbname>`:
+
+```
+MONGO_URI=mongodb+srv://usuario:<password>@cluster0.xxxxx.mongodb.net/linko
+```
+
+## Build y despliegue
+
+- **Backend**: se despliega en [Render](https://render.com) usando `npm start`. Render inyecta la variable `PORT` automáticamente.
+- **Frontend**: se despliega en [Vercel](https://vercel.com) con `npm run build`. El archivo `vercel.json` configura rewrites para SPA routing.
+
+## Estado actual
+
+- Tests automatizados del backend (Vitest + supertest + mongodb-memory-server)
+- Sin Docker / docker-compose
+- Sin CI/CD configurado
