@@ -1,15 +1,21 @@
-.container{
-    margin-top: 50px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    
+.container {
+  margin-top: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
-.container h3{
-    text-align: center;
-    padding-left: 20px;
+
+.container h3 {
+  text-align: center;
+  padding-left: 20px;
 }
-.container ul{
-    list-style: none;
-    padding: 0;
+
+.container ul {
+  list-style: none;
+  padding: 0;
+}
+
+.error {
+  color: #dc3545;
+  text-align: center;
 }

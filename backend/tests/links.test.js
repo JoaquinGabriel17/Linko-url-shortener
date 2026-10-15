@@ -61,6 +61,30 @@ describe('POST /links/create', () => {
     expect(link.createdBy.toString()).toBe(userId.toString());
     expect(link.name).toBe('Mi link');
   });
+
+  it('con token inválido responde 401 y no crea ningún link', async () => {
+    const res = await request(app)
+      .post('/links/create')
+      .set('Authorization', 'Bearer no-es-un-token')
+      .send({ originalUrl: 'https://example.com/invalido' });
+
+    expect(res.status).toBe(401);
+    expect(res.body.error).toBeDefined();
+    expect(await Link.countDocuments()).toBe(0);
+  });
+
+  it('con token expirado responde 401 y no crea ningún link', async () => {
+    const token = makeToken(new mongoose.Types.ObjectId(), { expiresIn: '-1s' });
+
+    const res = await request(app)
+      .post('/links/create')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ originalUrl: 'https://example.com/expirado' });
+
+    expect(res.status).toBe(401);
+    expect(res.body.error).toBeDefined();
+    expect(await Link.countDocuments()).toBe(0);
+  });
 });
 
 describe('GET /:shortCode', () => {
@@ -118,6 +142,12 @@ describe('GET /links', () => {
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(1);
     expect(res.body[0].originalUrl).toBe('https://example.com/a');
+    // El listado expone el enlace corto y los datos del dashboard reales.
+    expect(res.body[0].shortUrl).toBe(`${env.BASE_URL}/${res.body[0].shortCode}`);
+    expect(res.body[0].clicks).toBe(0);
+    expect(res.body[0].createdAt).toBeDefined();
+    expect(res.body[0]).not.toHaveProperty('name');
+    expect(res.body[0]).not.toHaveProperty('description');
   });
 
   it('ordena y limita con lista blanca', async () => {

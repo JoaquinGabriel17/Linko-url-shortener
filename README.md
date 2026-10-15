@@ -101,8 +101,7 @@ La app correrá en `http://localhost:5173`.
 
 | Variable | Descripción | Requerida |
 |----------|-------------|-----------|
-| `VITE_API_URL` | URL base del backend | Sí |
-| `VITE_FRONTEND_URL` | URL pública del frontend (usada en Register, Navbar, Login) | Sí |
+| `VITE_API_URL` | URL base del backend (usada por el único cliente axios, `frontend/src/api.js`) | Sí |
 
 ## Scripts disponibles
 

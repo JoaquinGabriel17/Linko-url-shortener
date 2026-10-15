@@ -85,3 +85,17 @@
     left: 10px;
     font-size: 1.5rem;
   }
+
+  .expired {
+    margin: 0 0 12px;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #fff3cd;
+    color: #856404;
+    font-size: 0.95rem;
+  }
+
+  .error {
+    margin-top: 0.5rem;
+    color: #dc3545;
+  }

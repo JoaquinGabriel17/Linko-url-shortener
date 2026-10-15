@@ -1,9 +1,9 @@
 import Alert from '../Alert/Alert';
 import styles from './Register.module.css';
 import { useState } from 'react';
-import { useUser } from '../../context/UserContext';
+import { useUser } from '../../context/userContext';
 import { useNavigate } from 'react-router-dom';
-import api from '../../api';
+import api, { getErrorMessage } from '../../api';
 
 export default function Register() {
 
@@ -61,12 +61,15 @@ export default function Register() {
       setAlertData({
         type: 'error',
         title: 'Error al crear usuario',
-        message: err.response?.data?.error || 'El servidor devolvió un error, por favor inténtelo mas tarde'
+        message: getErrorMessage(
+          err,
+          'El servidor devolvió un error, por favor inténtelo más tarde'
+        ),
       })
     }
   };
 
-  const resolve = async(e) => {
+  const resolve = () => {
     setAlertData(null)
   }
 
@@ -79,7 +82,7 @@ export default function Register() {
       </a>
     <div className={styles.container}>
       <h2 className={styles.title}>Crear cuenta</h2>
-      <form className={styles.form}>
+      <form className={styles.form} onSubmit={handleSubmit}>
         <input 
         type="text" 
         name='username'
@@ -115,12 +118,11 @@ export default function Register() {
             required
           />        
           <button
-          onClick={handleSubmit}
           type="submit" 
           className={styles.button}>Registrarse</button>
           <a 
           className={styles.loginButton}
-          ><button onClick={() => navigate('/login')} >¿Ya tienes una cuenta? Inicia sesión aquí</button></a>
+          ><button type="button" onClick={() => navigate('/login')} >¿Ya tienes una cuenta? Inicia sesión aquí</button></a>
       </form>
       { alertData && <Alert resolve={resolve} alertData={alertData} ></Alert>}
     </div>
