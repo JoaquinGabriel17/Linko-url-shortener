@@ -8,7 +8,7 @@ function TopLinks() {
   const [topLinks, setTopLinks] = useState([]);
   const [error, setError] = useState(null);
   const { user } = useUser();
-  const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+  const VITE_API_URL = import.meta.env.VITE_API_URL;
 
   const [loading, setLoading] = useState(false);
 
@@ -18,7 +18,7 @@ function TopLinks() {
 
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${VITE_BACKEND_URL}/links/links?limit=5&sort=clicks&userId=${user.userId}`, {
+        const res = await fetch(`${VITE_API_URL}/links/links?limit=5&sort=clicks&userId=${user.userId}`, {
           headers: {
             'Authorization': `Bearer ${user.token}`,
           },

@@ -3,7 +3,7 @@ import styles from './Register.module.css';
 import { useState } from 'react';
 import { useUser } from '../../context/UserContext';
 import { useNavigate } from 'react-router-dom';
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
+const backendUrl = import.meta.env.VITE_API_URL;
 const frontendUrl = import.meta.env.VITE_FRONTEND_URL
 
 export default function Register() {

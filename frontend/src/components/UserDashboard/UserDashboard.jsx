@@ -14,7 +14,7 @@ export default function UserDashboard(){
     const [createLink, setCreateLink] = useState(false)
     const [ loading, setLoading ] = useState(false)
 
-    const backendUrl = import.meta.env.VITE_BACKEND_URL
+    const backendUrl = import.meta.env.VITE_API_URL
 
     useEffect(() => {
         const fetchLinks = async () => {

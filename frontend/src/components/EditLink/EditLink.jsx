@@ -11,7 +11,7 @@ export default function EditLink({  linkId, onClose, originalName, originalDescr
   const [error, setError] = useState('');
   const [ alert, setAlert] = useState(null)
 
-  const backendUrl = import.meta.env.VITE_BACKEND_URL
+  const backendUrl = import.meta.env.VITE_API_URL
 
   const {user} = useUser()
 
