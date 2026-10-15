@@ -10,4 +10,9 @@ process.env.PORT = process.env.PORT || '10000';
 process.env.BASE_URL = 'http://localhost:10000';
 process.env.ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS || 'http://localhost:5173';
 
-
+// Límites bajos para poder disparar el 429 en los tests.
+process.env.RATE_LIMIT_WINDOW_MS = '60000';
+process.env.RATE_LIMIT_AUTH_MAX = '3';
+process.env.RATE_LIMIT_CREATE_MAX = '5';
+process.env.RATE_LIMIT_REDIRECT_WINDOW_MS = '60000';
+process.env.RATE_LIMIT_REDIRECT_MAX = '10';
