@@ -4,7 +4,7 @@ import { useUser } from '../../context/userContext';
 import api from '../../api';
 import React, { useEffect, useState } from 'react';
 import Link from '../Link/Link';
-import CreateLink from '../CreateLink/CreateLink';
+import UrlForm from '../UrlForm/UrlForm';
 import Loading from '../Loading/Loading';
 
 export default function UserDashboard(){
@@ -49,9 +49,9 @@ export default function UserDashboard(){
             onClick={createLinkHandle}
             >Nuevo link +</button>
 
-            {createLink&&<CreateLink 
-            onClose={() => setCreateLink(false)}
-            visible={createLink}></CreateLink>}
+            {createLink&&<UrlForm 
+            inModal
+            onClose={() => setCreateLink(false)}></UrlForm>}
 
             </div>
             { loading ? <Loading message='Cargando links de la cuenta'></Loading> : (
