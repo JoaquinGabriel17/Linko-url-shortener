@@ -83,7 +83,7 @@ La app correrá en `http://localhost:5173`.
 |----------|-------------|-----------|
 | `PORT` | Puerto del servidor | No (default: `10000`) |
 | `MONGO_URI` | URI de conexión a MongoDB | Sí |
-| `JWT_SECRET` | Secreto para firmar tokens JWT | Sí |
+| `JWT_SECRET` | Secreto para firmar tokens JWT (mínimo 32 caracteres) | Sí |
 | `JWT_EXPIRES_IN` | Vigencia del token (ej: `1d`, `12h`, `30m`) | No (default: `1d`) |
 | `BASE_URL` | URL pública del backend; con ella se construye cada `shortUrl`. Sin barra final | Sí |
 | `ALLOWED_ORIGINS` | Orígenes permitidos por CORS, separados por coma | Sí |
@@ -93,7 +93,7 @@ La app correrá en `http://localhost:5173`.
 | `RATE_LIMIT_REDIRECT_WINDOW_MS` | Ventana del rate limiting de la redirección (ms) | No (default: `60000`) |
 | `RATE_LIMIT_REDIRECT_MAX` | Máx. requests por ventana en la redirección | No (default: `120`) |
 
-> La validación se hace con **zod** al arrancar (`backend/config/env.js`): si falta o es inválida alguna variable requerida, el proceso **sale con código 1** y un mensaje claro.
+> La validación se hace con **zod** al arrancar (`backend/config/env.js`): si falta o es inválida alguna variable requerida, el proceso **sale con código 1** y un mensaje claro. Para generar un `JWT_SECRET` seguro: `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"`.
 
 ### Frontend (`frontend/.env`)
 

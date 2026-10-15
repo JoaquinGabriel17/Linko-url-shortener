@@ -3,14 +3,19 @@ import { z } from 'zod';
 
 dotenv.config();
 
-const requiredString = (name) =>
+const requiredString = (name, minLength = 1) =>
   z
     .string({ error: `${name} es obligatoria` })
-    .min(1, `${name} es obligatoria`);
+    .min(
+      minLength,
+      minLength === 1
+        ? `${name} es obligatoria`
+        : `${name} debe tener al menos ${minLength} caracteres`
+    );
 
 const schema = z.object({
   MONGO_URI: requiredString('MONGO_URI'),
-  JWT_SECRET: requiredString('JWT_SECRET'),
+  JWT_SECRET: requiredString('JWT_SECRET', 32),
   JWT_EXPIRES_IN: z
     .string()
     .regex(
