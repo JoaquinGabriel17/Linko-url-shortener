@@ -1,12 +1,28 @@
 import express from 'express';
+import { z } from 'zod';
 import Link from '../models/Link.js';
 import { redirectLimiter } from '../middleware/rateLimit.js';
+import { ALIAS_REGEX, MIN_ALIAS_LENGTH, MAX_ALIAS_LENGTH } from '../services/alias.js';
 
 const router = express.Router();
 
+// El shortCode solo admite el charset de alias y su rango de longitud. Un valor
+// malformado se trata como no encontrado (404) sin pegarle a la DB.
+const shortCodeParamSchema = z
+  .string()
+  .min(MIN_ALIAS_LENGTH)
+  .max(MAX_ALIAS_LENGTH)
+  .regex(ALIAS_REGEX);
+
 // Redirección por short code.
 router.get('/:shortCode', redirectLimiter, async (req, res) => {
-  const { shortCode } = req.params;
+  const parsed = shortCodeParamSchema.safeParse(req.params.shortCode);
+
+  if (!parsed.success) {
+    return res.status(404).json({ error: 'URL no encontrada' });
+  }
+
+  const shortCode = parsed.data;
 
   try {
     // findOneAndUpdate con $inc resuelve el link y cuenta el clic en una sola

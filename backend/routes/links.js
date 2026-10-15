@@ -1,99 +1,154 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import { z } from 'zod';
-import { nanoid } from 'nanoid';
 import Link from '../models/Link.js';
 import authMiddleware from '../middleware/auth.js';
 import optionalAuth from '../middleware/optionalAuth.js';
 import { createLimiter } from '../middleware/rateLimit.js';
 import { env } from '../config/env.js';
+import * as shortCode from '../services/shortCode.js';
+import { httpUrlSchema, normalizeUrl } from '../services/url.js';
+import { aliasSchema } from '../services/alias.js';
 
 const router = express.Router();
 
 const MAX_LIMIT = 100;
-const SORTABLE_FIELDS = new Set(['clicks', 'createdAt']);
 
-const httpUrl = z
-  .string()
-  .trim()
-  .refine((value) => {
-    try {
-      const url = new URL(value);
-      return url.protocol === 'http:' || url.protocol === 'https:';
-    } catch {
-      return false;
-    }
-  }, 'Debe ser una URL http/https válida');
+// Id de Mongo: 24 hex. Validar antes de tocar la DB evita CastError/500.
+const idSchema = z.string().regex(/^[0-9a-fA-F]{24}$/);
 
-// Solo estos campos son editables. .strict() rechaza cualquier otro (evita
-// mass assignment sobre clicks, createdBy, shortCode, etc.).
+// Body de creación. .strict() rechaza campos no declarados (mass assignment).
+const createSchema = z
+  .object({
+    originalUrl: httpUrlSchema,
+    shortCode: aliasSchema.optional(),
+    name: z.string().trim().max(100, 'El nombre es demasiado largo').optional(),
+    description: z.string().trim().max(300, 'La descripción es demasiado larga').optional(),
+    forceNew: z.boolean().optional().default(false),
+  })
+  .strict();
+
+// Solo estos campos son editables. El shortCode no se modifica en la edición.
 const updateSchema = z
   .object({
     name: z.string().trim().max(100, 'El nombre es demasiado largo').optional(),
     description: z.string().trim().max(300, 'La descripción es demasiado larga').optional(),
-    originalUrl: httpUrl.optional(),
+    originalUrl: httpUrlSchema.optional(),
   })
   .strict();
 
+const listQuerySchema = z.object({
+  sort: z
+    .enum(['clicks', 'createdAt', '-clicks', '-createdAt'], {
+      error: 'Parámetro sort inválido',
+    })
+    .optional(),
+  limit: z.coerce
+    .number({ error: 'Parámetro limit inválido' })
+    .int('Parámetro limit inválido')
+    .min(1, 'Parámetro limit inválido')
+    .optional(),
+});
+
+function buildResponse(link, deduplicated) {
+  const body = {
+    shortUrl: `${env.BASE_URL}/${link.shortCode}`,
+    shortCode: link.shortCode,
+    originalUrl: link.originalUrl,
+  };
+  if (deduplicated) {
+    body.deduplicated = true;
+  }
+  return body;
+}
+
 // Crear nuevo link (anónimo o autenticado). Endpoint único de creación.
 router.post('/create', createLimiter, optionalAuth, async (req, res) => {
-  const { originalUrl, shortCode, name, description } = req.body;
+  const parsed = createSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ message: parsed.error.issues[0].message });
+  }
 
-  if (!originalUrl) {
-    return res.status(400).json({ error: 'URL requerida' });
+  const { originalUrl, shortCode: alias, name, description, forceNew } = parsed.data;
+  const normalizedUrl = normalizeUrl(originalUrl);
+  const userId = req.user?.id;
+
+  // Los alias personalizados requieren sesión.
+  if (alias && !userId) {
+    return res.status(401).json({ message: 'Se requiere iniciar sesión para usar un alias' });
   }
 
   try {
-    const code = shortCode || nanoid(6);
+    // Deduplicación: solo con usuario, sin alias, sin forceNew y sin metadata.
+    if (userId && !alias && !forceNew && !name && !description) {
+      const existing = await Link.findOne({ createdBy: userId, normalizedUrl });
+      if (existing) {
+        return res.status(200).json(buildResponse(existing, true));
+      }
+    }
 
-    const linkData = {
-      originalUrl,
-      shortCode: code,
-      createdBy: req.user?.id,
-    };
-
+    const baseData = { originalUrl, normalizedUrl, createdBy: userId };
     if (name) {
-      linkData.name = name;
+      baseData.name = name;
     }
     if (description) {
-      linkData.description = description;
+      baseData.description = description;
     }
 
-    const newLink = new Link(linkData);
-    await newLink.save();
+    let link;
 
-    res.status(201).json({
-      shortUrl: `${env.BASE_URL}/${code}`,
-      shortCode: code,
-      originalUrl,
-    });
+    if (alias) {
+      // Alias explícito: sin reintento. Una colisión en shortCode es 409.
+      try {
+        link = new Link({ ...baseData, shortCode: alias });
+        await link.save();
+      } catch (error) {
+        if (error?.code === 11000 && error?.keyPattern?.shortCode !== undefined) {
+          return res.status(409).json({ message: 'El alias ya está en uso' });
+        }
+        throw error;
+      }
+    } else {
+      // Código autogenerado con reintento ante colisión.
+      link = await shortCode.createWithUniqueCode({
+        Link,
+        data: baseData,
+        generate: shortCode.generateCode,
+      });
+    }
+
+    return res.status(201).json(buildResponse(link, false));
   } catch (error) {
+    if (error instanceof shortCode.ShortCodeCollisionError) {
+      res.set('Retry-After', '1');
+      return res
+        .status(503)
+        .json({ message: 'No se pudo generar un código único, intentá de nuevo' });
+    }
     console.error('Error al crear link:', error);
-    res.status(500).json({ error: 'Error del servidor' });
+    return res.status(500).json({ message: 'Error del servidor' });
   }
 });
 
 // Listar SOLO los links del usuario autenticado.
 router.get('/', authMiddleware, async (req, res) => {
+  const parsed = listQuerySchema.safeParse(req.query);
+  if (!parsed.success) {
+    return res.status(400).json({ message: parsed.error.issues[0].message });
+  }
+
+  const { sort, limit } = parsed.data;
+
   try {
-    const { sort, limit } = req.query;
     const query = Link.find({ createdBy: req.user.id });
 
-    if (sort !== undefined) {
-      const raw = String(sort);
-      const field = raw.startsWith('-') ? raw.slice(1) : raw;
-      if (!SORTABLE_FIELDS.has(field)) {
-        return res.status(400).json({ message: 'Parámetro sort inválido' });
-      }
-      query.sort({ [field]: raw.startsWith('-') ? -1 : 1 });
+    if (sort) {
+      const desc = sort.startsWith('-');
+      const field = desc ? sort.slice(1) : sort;
+      query.sort({ [field]: desc ? -1 : 1 });
     }
 
     if (limit !== undefined) {
-      const parsedLimit = Number(limit);
-      if (!Number.isInteger(parsedLimit) || parsedLimit < 1) {
-        return res.status(400).json({ message: 'Parámetro limit inválido' });
-      }
-      query.limit(Math.min(parsedLimit, MAX_LIMIT));
+      query.limit(Math.min(limit, MAX_LIMIT));
     }
 
     const links = await query.exec();
@@ -107,10 +162,14 @@ router.get('/', authMiddleware, async (req, res) => {
 // Editar (PUT y PATCH comparten handler). Ownership por req.user.id; si el link
 // no es del usuario o no existe, se responde 404 (no se revela existencia).
 async function updateLink(req, res) {
-  const { id } = req.params;
-
-  if (!mongoose.isValidObjectId(id)) {
+  const idParsed = idSchema.safeParse(req.params.id);
+  if (!idParsed.success) {
     return res.status(404).json({ message: 'Link no encontrado' });
+  }
+
+  // El shortCode es inmutable en la edición.
+  if (req.body && Object.prototype.hasOwnProperty.call(req.body, 'shortCode')) {
+    return res.status(400).json({ message: 'El shortCode no se puede modificar' });
   }
 
   const parsed = updateSchema.safeParse(req.body);
@@ -122,10 +181,15 @@ async function updateLink(req, res) {
     return res.status(400).json({ message: 'No se enviaron campos para actualizar' });
   }
 
+  const update = { ...parsed.data };
+  if (update.originalUrl !== undefined) {
+    update.normalizedUrl = normalizeUrl(update.originalUrl);
+  }
+
   try {
     const link = await Link.findOneAndUpdate(
-      { _id: id, createdBy: req.user.id },
-      { $set: parsed.data },
+      { _id: idParsed.data, createdBy: req.user.id },
+      { $set: update },
       { new: true, runValidators: true }
     );
 
@@ -145,14 +209,13 @@ router.patch('/:id', authMiddleware, updateLink);
 
 // Eliminar un link del usuario.
 router.delete('/:id', authMiddleware, async (req, res) => {
-  const { id } = req.params;
-
-  if (!mongoose.isValidObjectId(id)) {
+  const idParsed = idSchema.safeParse(req.params.id);
+  if (!idParsed.success) {
     return res.status(404).json({ message: 'Link no encontrado' });
   }
 
   try {
-    const link = await Link.findOneAndDelete({ _id: id, createdBy: req.user.id });
+    const link = await Link.findOneAndDelete({ _id: idParsed.data, createdBy: req.user.id });
 
     if (!link) {
       return res.status(404).json({ message: 'Link no encontrado' });
