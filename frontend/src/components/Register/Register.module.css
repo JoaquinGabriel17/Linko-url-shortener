@@ -1,74 +1,62 @@
+/* Los estilos base vienen del módulo compartido Auth (composes). */
+
+.background {
+  composes: background from '../Auth/Auth.module.css';
+}
+
 .container {
-    width: 400px;
-    margin: 50px auto;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    background-color: #fff;
-    text-align: center;
-    font-family: Arial, sans-serif;
-  }
-  .background{
-    /*  background: linear-gradient(to top right, #c2e9fb, #a1c4fd);             /*celeste claro*/
-/*    background: linear-gradient(to right, #0f2027, #203a43, #2c5364);          /*azul gris oscuro*/
-  /*  background: linear-gradient(135deg, #89f7fe, #66a6ff);                   /*celeste a azul*/
-/*  background: linear-gradient(to bottom, #1e3c72, #2a5298, #a8c0ff);    /*azul oscuro a celeste claro*/
-  background: linear-gradient(to right, #00c6ff, #0072ff);
+  composes: container from '../Auth/Auth.module.css';
+}
 
+.title {
+  composes: title from '../Auth/Auth.module.css';
+}
 
+.form {
+  composes: form from '../Auth/Auth.module.css';
+}
 
-    height: 100vh;
-    width: 100vw;
-    align-items: center;
-    justify-content: center;
-    display: flex
+.input {
+  composes: input from '../Auth/Auth.module.css';
+}
 
+.button {
+  composes: button from '../Auth/Auth.module.css';
+}
+
+.homeButton {
+  composes: homeButton from '../Auth/Auth.module.css';
+}
+
+/* Es error de campo (inline, asociado por aria-describedby al input). */
+.fieldError {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* Es un <Link> (navegación), no un <button>: no hereda el estilo base
+   :where(button), así que se le da look de botón primario a mano.
+   Background propio => :hover/:active propios (ver main.css). */
+.loginButton {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 1rem;
+  text-align: center;
+  text-decoration: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .loginButton:hover {
+    background-color: var(--color-primary-hover);
   }
-  
-  
-  .title {
-    font-size: 24px;
-    margin-bottom: 20px;
-    color: #333;
-  }
-  
-  .form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-  
-  .input {
-    padding: 12px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    transition: border-color 0.3s;
-  }
-  
-  .input:focus {
-    border-color: #1a73e8;
-    outline: none;
-  }
-  
-  .button {
-    padding: 12px;
-    font-size: 16px;
-    background-color: #1a73e8;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .button:hover {
-    background-color: #155ab6;
-  }
-  
-  .homeButton{
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    font-size: 1.5rem;
-  }
+}
+
+.loginButton:active {
+  background-color: var(--color-primary-active);
+}

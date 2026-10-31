@@ -1,0 +1,87 @@
+/* Estilos compartidos de las pantallas de autenticación (Login y Register).
+   Antes estaban ~95% duplicados entre Login.module.css y Register.module.css,
+   con comentarios CSS anidados que cerraban el bloque de forma prematura y
+   `display: flex` partido en dos lineas.
+
+   NOTA para futuros componentes: `composes` solo funciona entre modulos CSS
+   (`from './Otro.module.css'`), NO desde un archivo plano como main.css, y la
+   linea `composes: ...` debe ser la PRIMERA declaracion del bloque. Se consume
+   desde cada modulo (Login/Register) asi el JSX no cambia. */
+
+.background {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--gradient-auth);
+}
+
+/* <main id="main"> (skip link / landmark) es el flex item ahora: sin width
+   definido se shrink-to-fit al contenido y la card no llegaría a su
+   max-width de 400px. */
+.background main {
+  width: 100%;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 30px;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-md);
+  text-align: center;
+}
+
+.title {
+  margin: 0 0 20px;
+  font-size: 24px;
+  color: var(--color-text);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+}
+
+.input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* El :focus-visible global ya dibuja el outline; acá se suma cambio de borde
+   y halo para reforzar el foco en campos de formulario. */
+.input:focus-visible {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(11, 94, 215, 0.2);
+}
+
+.button {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+}
+
+.homeButton {
+  position: absolute;
+  /* Safe-area: en landscape con notch el botón quedaba bajo el sensor
+     housing. calc() suma el inset al offset base. */
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  left: calc(10px + env(safe-area-inset-left, 0px));
+}

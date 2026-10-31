@@ -50,47 +50,65 @@ export default function UserDashboard() {
   };
 
   return (
-    <div className={styles.container}>
+    // Skip link + <main>: WCAG 2.4.1 y landmark (ver App.jsx).
+    <>
+      <a href="#main" className="sr-only-focusable">
+        Saltar al contenido
+      </a>
       <Navbar />
+      <main id="main">
+        <div className={styles.container}>
+          <div className={styles.newLinkContainer}>
+            <h1>Tablero</h1>
+            <button className={styles.createLink} onClick={() => setShowForm(true)}>
+              Nuevo link +
+            </button>
+          </div>
 
-      <div className={styles.newLinkContainer}>
-        <h1>Tablero</h1>
-        <button className={styles.createLink} onClick={() => setShowForm(true)}>
-          Nuevo link +
-        </button>
-      </div>
+          {/* Montado siempre; el <dialog> interno se togglea con `open`. */}
+          <UrlForm
+            inModal
+            open={showForm}
+            onClose={() => setShowForm(false)}
+            onCreated={handleCreated}
+          />
 
-      {showForm && (
-        <UrlForm inModal onClose={() => setShowForm(false)} onCreated={handleCreated} />
-      )}
+          {error && (
+            <p className={styles.error} role="alert">
+              {error}
+            </p>
+          )}
 
-      {error && <p className={styles.error}>{error}</p>}
-
-      {loading ? (
-        <Loading message="Cargando links de la cuenta" />
-      ) : links.length === 0 ? (
-        <p className={styles.empty}>Todavía no creaste ningún link.</p>
-      ) : (
-        <div className={styles.linkContainer}>
-          <ul className={styles.linkList}>
-            {links.map((link) => (
-              <li key={link._id}>
-                <Link
-                  shortUrl={link.shortUrl}
-                  originalUrl={link.originalUrl}
-                  name={link.name}
-                  description={link.description}
-                  clicks={link.clicks}
-                  createdAt={link.createdAt}
-                  linkId={link._id}
-                  onDelete={handleDeleted}
-                  onUpdated={fetchLinks}
-                />
-              </li>
-            ))}
-          </ul>
+          {loading ? (
+            <Loading message="Cargando links de la cuenta…" />
+          ) : links.length === 0 ? (
+            <p className={styles.empty}>Todavía no creaste ningún link.</p>
+          ) : (
+            <div className={styles.linkContainer}>
+              {/* h2 de sección: hace la jerarquía h1 → h2 → h3 de las cards
+                  (antes h1 → h4, fail de heading-order). */}
+              <h2>Tus links</h2>
+              <ul className={styles.linkList}>
+                {links.map((link) => (
+                  <li key={link._id}>
+                    <Link
+                      shortUrl={link.shortUrl}
+                      originalUrl={link.originalUrl}
+                      name={link.name}
+                      description={link.description}
+                      clicks={link.clicks}
+                      createdAt={link.createdAt}
+                      linkId={link._id}
+                      onDelete={handleDeleted}
+                      onUpdated={fetchLinks}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </main>
+    </>
   );
 }

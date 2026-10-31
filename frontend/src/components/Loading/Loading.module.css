@@ -1,37 +1,54 @@
 .spinner {
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    border-top: 4px solid #1e90ff;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top: 4px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.inlineContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fullscreenContainer {
+  position: fixed;
+  /* inset:0 en vez de top/left + width:100vw: 100vw incluye el ancho del
+     scrollbar y generaba scroll horizontal. */
+  inset: 0;
+  /* dvh con fallback (vh primero, dvh después). inset:0 ya cubre el viewport;
+     el min-height garantiza cobertura con la barra de URL móvil contraída. */
+  min-height: 100vh;
+  min-height: 100dvh;
+  /* Safe-area como padding del CONTENIDO (no del min-height): no hay altura
+     fija que colapsar — el spinner centrado queda dentro de la zona segura. */
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  background-color: rgba(255, 255, 255, 0.7);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Era un <h2>: mal uso semántico para un mensaje de estado. Ahora es un <p
+   role="status">, así que hay que darle jerarquía visual sin ser heading. */
+.message {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
   }
-  
-  .inlineContainer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
+  100% {
+    transform: rotate(360deg);
   }
-  
-  .fullscreenContainer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(255, 255, 255, 0.7);
-    z-index: 9999;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-  }
-  
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-  
+}

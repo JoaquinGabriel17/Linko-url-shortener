@@ -1,20 +1,17 @@
+/* El estilo base de <button> vive ahora en main.css como :where(button)
+   (especificidad 0). Antes había un selector global `button` acá dentro de un
+   CSS Module, algo que NO se scopea y se filtraba a toda la app. */
 
-button {
-  background-color: #1e90ff;
-  color: white;
-  padding: 0.6rem 1.2rem;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-button:hover {
-  background-color: #1b7ddf;
-}
-.container{
+.container {
   display: flex;
-  justify-content: center;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  width: 100%;
+  /* Ancho de lectura razonable + centrado; el padding horizontal evita que el
+     contenido toque los bordes en mobile. El Navbar va por fuera (hermano),
+     full-bleed natural. */
+  max-width: 960px;
+  margin-inline: auto;
+  padding-inline: 16px;
 }

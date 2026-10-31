@@ -4,6 +4,11 @@
   align-items: center;
   gap: 16px;
   margin-top: 40px;
+  /* Ancho DEFINIDO (no fit-content): como flex item con align-items:center,
+     sin esto el min-content de los inputs (600px) forceaba el ancho del
+     contenedor y generaba scroll horizontal en mobile. */
+  width: 100%;
+  max-width: 600px;
 }
 
 .form {
@@ -21,20 +26,23 @@
 
 .input {
   padding: 0.75rem 1rem;
-  border: 2px solid #ccc;
-  border-radius: 8px;
-  width: 600px;
-  max-width: 100%;
-  box-sizing: border-box;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  /* Patrón invertido (width:100% + max-width): con `width:600px` fijo, el
+     min-content del input forceaba el layout viewport en mobile (el
+     max-width:100% resolvía circularmente contra un padre auto). */
+  width: 100%;
+  max-width: 600px;
   font-size: 1rem;
   transition: border-color 0.2s, box-shadow 0.2s;
-  outline: none;
-  background-color: white;
+  /* Sin outline: none — el :focus-visible global dibuja el outline. */
+  background-color: var(--color-surface);
+  color: var(--color-text);
 }
 
-.input:focus {
-  border-color: #1e90ff;
-  box-shadow: 0 0 0 4px rgba(30, 144, 255, 0.2);
+.input:focus-visible {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(11, 94, 215, 0.2);
 }
 
 .submit {
@@ -43,7 +51,9 @@
 }
 
 .error {
-  color: #dc3545;
+  /* danger-strong: sobre el peor punto de --gradient-page da 4.91:1 (medido);
+     --color-danger solo llega a 3.65:1 → fail 1.4.3. */
+  color: var(--color-danger-strong);
   text-align: center;
   margin: 0;
 }
@@ -53,25 +63,25 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  width: 600px;
-  max-width: 100%;
-  box-sizing: border-box;
+  /* Mismo patrón invertido que .input (ver arriba). */
+  width: 100%;
+  max-width: 600px;
   padding: 16px;
-  background-color: white;
-  border: 2px solid #ccc;
-  border-radius: 8px;
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
 }
 
 .notice {
   margin: 0;
-  color: #1e90ff;
+  color: var(--color-primary);
   font-weight: 600;
   text-align: center;
 }
 
 .shortLink {
   font-size: 1.1rem;
-  color: #1e90ff;
+  color: var(--color-primary);
   word-break: break-all;
   text-align: center;
 }
@@ -89,33 +99,56 @@
   gap: 8px;
 }
 
+/* Background propio => hay que redeclarar :hover/:active/:disabled (el
+   :active base tiene espec. (0,1,0) y este bloque empataría/pisaría). */
 .secondaryButton {
-  background-color: #64748b;
+  background-color: var(--color-muted);
 }
 
-.secondaryButton:hover {
-  background-color: #475569;
+@media (hover: hover) and (pointer: fine) {
+  .secondaryButton:hover {
+    background-color: var(--color-muted-hover);
+  }
 }
 
-.overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 998;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.secondaryButton:active {
+  background-color: var(--color-muted-active);
 }
 
+.secondaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* El overlay como div ya no existe: <dialog> + showModal() nos da el
+   ::backdrop, Esc, inert del resto de la página y retorno de foco nativos. */
 .modal {
   position: relative;
+  width: min(560px, 92vw);
+  max-width: 92vw;
+  max-height: 90vh;
+  padding: 24px;
+  /* Safe-area inferior: acciones del modal fuera del home indicator. */
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  background-color: var(--color-surface);
+  border: none;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  overflow: auto;
+  /* Evita que el scroll del modal se encadene con la página de atrás. */
+  overscroll-behavior: contain;
+}
+
+/* <dialog> es display:none cuando está cerrado; el layout flex se declara
+   recién con [open] para no forzar display en el estado oculto. */
+.modal[open] {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  width: min(560px, 92vw);
-  padding: 24px;
-  background-color: white;
-  border-radius: 8px;
+}
+
+.modal::backdrop {
+  background-color: var(--color-scrim);
 }
 
 .title {
@@ -129,9 +162,20 @@
   right: 12px;
   padding: 4px 10px;
   background-color: transparent;
-  color: #0f172a;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   font-size: 20px;
   line-height: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .close:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-color: var(--color-muted);
+  }
+}
+
+.close:active {
+  background-color: rgba(0, 0, 0, 0.12);
 }

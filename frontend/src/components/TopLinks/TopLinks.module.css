@@ -1,11 +1,15 @@
 .container {
+  /* Ancho definido para que li { max-width:100% } resuelva contra un padre
+     con medida (patrón de UserDashboard); también acota la lista a 600px. */
+  width: 100%;
+  max-width: 600px;
   margin-top: 50px;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-.container h3 {
+.container h2 {
   text-align: center;
   padding-left: 20px;
 }
@@ -15,7 +19,13 @@
   padding: 0;
 }
 
+/* Ver UserDashboard.linkList li: evita que la tarjeta (width:550px) forcee
+   scroll horizontal en mobile. */
+.container li {
+  max-width: 100%;
+}
+
 .error {
-  color: #dc3545;
+  color: var(--color-danger);
   text-align: center;
 }

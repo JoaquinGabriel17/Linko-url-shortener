@@ -4,6 +4,7 @@ import { FiMoreVertical } from 'react-icons/fi';
 import EditLink from '../EditLink/EditLink';
 import { useUser } from '../../context/userContext';
 import { useCopy } from '../../lib/useCopy';
+import { syncModalScrollLock } from '../../lib/modalScrollLock';
 import api, { getErrorMessage } from '../../api';
 import Alert from '../Alert/Alert';
 import Loading from '../Loading/Loading';
@@ -34,7 +35,11 @@ export default function Link({
   const [alertData, setAlertData] = useState(null);
   const [loading, setLoading] = useState(false);
   const menuRef = useRef(null);
-  const editRef = useRef(null);
+  const editDialogRef = useRef(null);
+  // Dispersistente del dropdown: los triggers Editar/Eliminar se desmontan al
+  // abrir los diálogos, así que el retorno nativo de foco cae en body. Se
+  // usa inline en cada cierre (evita dependencias de effect en un helper).
+  const optionsRef = useRef(null);
 
   const showAlert = (data) =>
     new Promise((resolve) => {
@@ -73,11 +78,26 @@ export default function Link({
   };
 
   const handleDelete = async () => {
+    // Igual que handleEdit: se cierra el menú de opciones al disparar la acción
+    // (antes quedaba abierto por detrás del diálogo de confirmación).
+    setShowMenu(false);
     const confirmed = await showAlert({
       type: 'confirm',
       title: 'Confirmación',
       message: '¿Estás seguro de que querés eliminar este link?',
     });
+
+    // El diálogo de Alert cierra en UN EFECTO (asíncrono respecto del
+    // resolve), así que hay que esperar el cierre real antes de enfocar:
+    // un focus() anterior a close() lo pisaría el retorno nativo (→ body,
+    // porque "Eliminar" se desmontó con el dropdown). Mismo caso del fix de
+    // la edición. Si el link se eliminó, optionsRef ya no existe (card
+    // desmontada) y el fallback a body es el comportamiento esperado.
+    for (let i = 0; i < 100 && document.querySelector('dialog[role="alertdialog"][open]'); i++) {
+      await new Promise((r) => setTimeout(r, 20));
+    }
+    optionsRef.current?.focus();
+    optionsRef.current?.scrollIntoView({ block: 'nearest' });
 
     if (!confirmed) return;
 
@@ -101,27 +121,52 @@ export default function Link({
       if (showMenu && menuRef.current && !menuRef.current.contains(event.target)) {
         setShowMenu(false);
       }
-      if (showEditLink && editRef.current && !editRef.current.contains(event.target)) {
-        setShowEditLink(false);
-      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showMenu, showEditLink]);
+  }, [showMenu]);
+
+  // <dialog> nativo para el modal de edición: Esc, ::backdrop, inert del resto
+  // de la página y retorno de foco al disparador, sin focus-trap manual.
+  // Siempre montado; la sincronización va en ambos sentidos según `open`.
+  useEffect(() => {
+    const el = editDialogRef.current;
+    if (!el) return undefined;
+    // Capturado acá (patrón que pide exhaustive-deps): el nodo del botón
+    // "Opciones" sobrevive al cierre — si el card se desmontara, focar un
+    // nodo suelto es no-op, igual que el fallback a body.
+    const optionsEl = optionsRef.current;
+    if (showEditLink && !el.open) {
+      el.showModal();
+      syncModalScrollLock();
+    }
+    return () => {
+      // La cleanup corre ANTES del próximo effect (y en unmount): es el único
+      // lugar donde se cierra al des-togglear (un branch de cierre en el body
+      // del effect nunca se alcanzaba). Si el componente vive, el trigger
+      // "Editar" (dentro del dropdown) ya se desmontó al abrir, así que el
+      // retorno nativo de close() cae en body → devolver foco a "Opciones".
+      if (el.open) {
+        el.close();
+        syncModalScrollLock();
+        optionsEl?.focus();
+        optionsEl?.scrollIntoView({ block: 'nearest' });
+      }
+    };
+  }, [showEditLink]);
 
   const formattedDate = formatDate(createdAt);
 
   return (
     <div className={styles.container}>
-      {alertData && (
-        <div onClick={(e) => e.stopPropagation()}>
-          <Alert alertData={alertData} resolve={alertData.resolve} />
-        </div>
-      )}
+      {/* Montado siempre: el <dialog> interno solo togglea `open`. */}
+      <Alert alertData={alertData} resolve={alertData?.resolve} />
 
       <article>
-        <h4>{name || 'Sin nombre'}</h4>
+        {/* h3 (antes h4): con el h2 de sección del dashboard la jerarquía
+            queda h1 → h2 → h3 (axe heading-order). */}
+        <h3>{name || 'Sin nombre'}</h3>
         <p className={styles.linkUrl}>{shortUrl}</p>
         {originalUrl && <p className={styles.linkDestination}>{originalUrl}</p>}
         <p className={styles.linkDescription}>{description || 'Sin descripción'}</p>
@@ -141,7 +186,11 @@ export default function Link({
           aria-label="Copiar enlace corto"
         >
           <span className={`${styles.icon} ${copied ? styles.fadeOut : styles.fadeIn}`}>
-            {copied ? <FaCheck className={styles.copied} /> : <FaRegCopy />}
+            {copied ? (
+              <FaCheck className={styles.copied} aria-hidden="true" focusable="false" />
+            ) : (
+              <FaRegCopy aria-hidden="true" focusable="false" />
+            )}
           </span>
         </button>
 
@@ -151,11 +200,17 @@ export default function Link({
             className={`${styles.iconButton} ${styles.options}`}
             onClick={toggleMenu}
             aria-label="Opciones"
+            aria-haspopup="true"
+            aria-expanded={showMenu}
+            ref={optionsRef}
           >
-            <FiMoreVertical />
+            <FiMoreVertical aria-hidden="true" focusable="false" />
           </button>
         )}
 
+        {/* Es una lista de acciones, NO un menú ARIA: no se usan role="menu"
+            ni role="menuitem" porque obligarían a navegación con flechas,
+            Home/End y role="menuitem". Botones simples + teclado nativo. */}
         {showMenu && (
           <div
             className={styles.dropdownMenu}
@@ -163,33 +218,45 @@ export default function Link({
             ref={menuRef}
           >
             <ul>
-              <li onClick={handleEdit}>Editar</li>
-              <li onClick={handleDelete}>Eliminar</li>
+              <li>
+                <button type="button" onClick={handleEdit}>
+                  Editar
+                </button>
+              </li>
+              <li>
+                <button type="button" className={styles.danger} onClick={handleDelete}>
+                  Eliminar
+                </button>
+              </li>
             </ul>
           </div>
         )}
       </div>
 
-      {showEditLink && (
-        <div className={styles.modalOverlay}>
-          <div
-            className={styles.modalContent}
-            ref={editRef}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <EditLink
-              onClose={() => setShowEditLink(false)}
-              onUpdated={handleUpdated}
-              linkId={linkId}
-              originalDescription={description}
-              originalName={name}
-              originalUrl={originalUrl}
-            />
-          </div>
-        </div>
-      )}
+      {/* Siempre montado (solo se togglea showEditLink). El contenido va
+          condicionado para que el formulario de EditLink resetee al abrir. */}
+      <dialog
+        ref={editDialogRef}
+        className={styles.editDialog}
+        aria-label="Editar link"
+        onCancel={() => setShowEditLink(false)}
+        onClick={(e) => {
+          if (e.target === editDialogRef.current) setShowEditLink(false);
+        }}
+      >
+        {showEditLink && (
+          <EditLink
+            onClose={() => setShowEditLink(false)}
+            onUpdated={handleUpdated}
+            linkId={linkId}
+            originalDescription={description}
+            originalName={name}
+            originalUrl={originalUrl}
+          />
+        )}
+      </dialog>
 
-      {loading && <Loading fullscreen message="Eliminando link" />}
+      {loading && <Loading fullscreen message="Eliminando link…" />}
     </div>
   );
 }

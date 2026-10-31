@@ -1,20 +1,29 @@
 .container {
-  border: 2px solid #ccc;
-  border-radius: 8px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
   width: 550px;
   max-width: 100%;
-  box-sizing: border-box;
   font-size: 1rem;
-  background-color: white;
+  background-color: var(--color-surface);
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  margin: 20px;
+  /* Mobile-first: sin margen horizontal (el padding lo aporta .linkContainer
+     de la página); 20px como antes a partir de 640px. */
+  margin: 12px 0;
   position: relative;
 }
 
-.container:hover {
-  border-color: #1e90ff;
+@media (min-width: 640px) {
+  .container {
+    margin: 20px;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .container:hover {
+    border-color: var(--color-primary);
+  }
 }
 
 .container article {
@@ -26,13 +35,13 @@
   min-width: 0;
 }
 
-.container h4 {
+.container h3 {
   margin: 0;
   text-align: start;
 }
 
 .linkUrl {
-  color: #1e90ff;
+  color: var(--color-primary);
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -42,7 +51,7 @@
 .linkDestination {
   margin: 0;
   font-size: 0.85rem;
-  color: #999999;
+  color: var(--color-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -51,16 +60,18 @@
 .linkDescription {
   margin: 0;
   margin-top: 8px;
-  color: #0f172a;
+  color: var(--color-text);
 }
 
+/* Contador de clics y metadatos: cifras alineadas para comparar de un vistazo. */
 .meta {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 8px;
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .buttonContainer {
@@ -76,23 +87,35 @@
   align-items: center;
   justify-content: center;
   padding: 0 14px;
-  background-color: white;
-  color: #999999;
+  background-color: var(--color-surface);
+  color: var(--color-muted);
   border: none;
-  border-left: 2px solid #ccc;
+  border-left: 2px solid var(--color-border);
   border-radius: 0;
   cursor: pointer;
 }
 
-.iconButton:hover {
-  color: #1e90ff;
-  background-color: white;
-  border-left: 2px solid #1e90ff;
+@media (hover: hover) and (pointer: fine) {
+  .iconButton:hover {
+    color: var(--color-primary);
+    background-color: var(--color-surface);
+    border-left-color: var(--color-primary);
+  }
+}
+
+.iconButton:active {
+  color: var(--color-primary-active);
+  border-left-color: var(--color-primary-active);
+}
+
+.iconButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .buttonContainer .iconButton:last-child {
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
+  border-top-right-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
 }
 
 .icon {
@@ -103,7 +126,7 @@
 }
 
 .copied {
-  color: green;
+  color: var(--color-success);
 }
 
 .fadeIn {
@@ -118,12 +141,13 @@
   position: absolute;
   top: 100%;
   right: 0;
-  background-color: white;
-  border: 2px solid #ccc;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   padding: 6px 0;
   z-index: 10;
+  min-width: 140px;
 }
 
 .dropdownMenu ul {
@@ -134,35 +158,61 @@
   flex-direction: column;
 }
 
-.dropdownMenu li {
+/* Los items son <button> (no <li onClick>). Background transparente =>
+   :active propio (el :active base quedaría pisado, ver main.css). */
+.dropdownMenu button {
+  display: block;
+  width: 100%;
   padding: 8px 16px;
+  background: none;
+  border: none;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
   cursor: pointer;
-  transition: background-color 0.2s ease;
 }
 
-.dropdownMenu li:hover {
-  background-color: #f0f0f0;
+@media (hover: hover) and (pointer: fine) {
+  .dropdownMenu button:hover {
+    background-color: var(--color-surface-hover);
+  }
 }
 
-.modalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  backdrop-filter: blur(6px);
-  background-color: rgba(0, 0, 0, 0.3);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  margin: 0;
+.dropdownMenu button:active {
+  background-color: var(--color-surface-active);
+}
+
+/* "Eliminar" es destructivo: se distingue en rojo (con confirmación previa).
+   En hover/active el fondo se tiñe con --color-danger-soft* y el TEXTO pasa a
+   --color-danger-strong: sobre el tint el --color-danger base da 3.71:1/3.13:1
+   (bajo AA), mientras que el strong mantiene ≥5.7:1. */
+.dropdownMenu .danger {
+  color: var(--color-danger);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .dropdownMenu .danger:hover {
+    color: var(--color-danger-strong);
+    background-color: var(--color-danger-soft);
+  }
+}
+
+.dropdownMenu .danger:active {
+  color: var(--color-danger-strong);
+  background-color: var(--color-danger-soft-active);
+}
+
+/* El modal de edición es un <dialog> nativo: Esc, ::backdrop, inert del resto
+   y retorno de foco vienen gratis. El overlay como div ya no existe. */
+.editDialog {
   padding: 0;
+  border: none;
+  background: none;
+  overflow: visible;
+  overscroll-behavior: contain;
 }
 
-.modalContent {
-  z-index: 1001;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.editDialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(6px);
 }
