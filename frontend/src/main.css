@@ -1,15 +1,245 @@
-body {
-    /*background-color: #f2f4f8;*/
-    background: linear-gradient(to top, #c7c7c7, #ffffff);
-    color: #0f172a;
-    font-family: 'Inter', sans-serif;
-    margin: 0;
-    min-height: 100vh;
-  }
-  #root{
-    min-height: 100vh;
+:root {
+  /* Evita que los controles nativos (select, scrollbars, inputs) se inviertan
+     en modo dark del SO mientras no haya tema oscuro propio. */
+  color-scheme: light;
 
+  /* Primario: se usó #1e90ff originalmente, pero sobre blanco alcanza solo
+     3.24:1 y NO cumple WCAG 2.1 AA (4.5:1 mínimo para texto normal).
+     Se cambió a #0b5ed7 con escalones calculados desde el mismo tono
+     (fórmula WCAG rel-luminance, contraste = (L1+0.05)/(L2+0.05)):
+       --color-primary        #0b5ed7  sobre #fff = 5.84:1  (AA ✓)
+       --color-primary-hover  #0a58ca  sobre #fff = 6.44:1  (AA ✓)
+       --color-primary-active #084298  sobre #fff = 9.36:1  (AAA ✓)
+     El primario deja el margen de seguridad sobre el borde de AA, así que
+     blanco sobre --color-primary cumple holgadamente para botones y navbar. */
+  --color-primary: #0b5ed7;
+  --color-primary-hover: #0a58ca;
+  --color-primary-active: #084298;
+  --color-on-primary: #ffffff;
+
+  /* Escalas neutras y semánticas (ratios sobre #ffffff) */
+  --color-text: #0f172a; /* 17.85:1 ✓ AAA */
+  --color-muted: #64748b; /*  4.76:1 ✓ AA */
+  --color-danger: #dc3545; /*  4.53:1 ✓ AA */
+  --color-surface: #ffffff;
+  --color-border: #cccccc;
+  --color-scrim: rgba(0, 0, 0, 0.5);
+
+  /* Radios y sombras compartidos */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  /* Fondos de marca */
+  --gradient-auth: linear-gradient(to right, #00c6ff, #0072ff);
+  --gradient-page: linear-gradient(to top, #c7c7c7, #ffffff);
+
+  /* Estados interactivos y acentos semánticos (Fase 4 — ratios con la misma
+     fórmula WCAG rel-luminance sobre el fondo que los recibe):
+       --color-muted-hover        #475569  blanco encima      =  7.58:1 (AAA ✓)
+       --color-muted-active       #334155  blanco encima      = 10.36:1 (AAA ✓)
+       --color-surface-hover      #f0f0f0  --color-text encima= 15.66:1 (AAA ✓)
+       --color-surface-active     #e2e8f0  --color-text encima= 14.48:1 (AAA ✓)
+       --color-success            #16a34a  sobre #fff         =  3.30:1
+                                     (icono gráfico, WCAG 1.4.11 ≥3:1 ✓)
+       --color-danger-strong      #991b1b  sobre #fff = 8.31:1; sobre
+                                     --color-danger-soft = 6.80:1; sobre
+                                     --color-danger-soft-active = 5.74:1
+                                     (todos ≥4.5:1 ✓ AA). Se probó #b91c1c
+                                     (propuesto) y da 4.47:1 sobre el tint
+                                     active: apenas bajo AA, por eso se bajó
+                                     un escalón a red-800.
+       --color-danger-soft        #fee2e2  bg hover de "Eliminar"
+       --color-danger-soft-active #fecaca  bg active de "Eliminar"
+       --color-warning            #f59e0b  sobre #fff = 2.15:1 — SOLO borde
+                                     decorativo redundante con el título del
+                                     diálogo; nunca se usa como texto.
+       --color-warning-surface    #fff3cd  bg del aviso de sesión expirada
+       --color-warning-text       #856404  sobre warning-surface = 4.96:1 ✓ AA */
+  --color-muted-hover: #475569;
+  --color-muted-active: #334155;
+  --color-surface-hover: #f0f0f0;
+  --color-surface-active: #e2e8f0;
+  --color-success: #16a34a;
+  --color-danger-strong: #991b1b;
+  --color-danger-soft: #fee2e2;
+  --color-danger-soft-active: #fecaca;
+  --color-warning: #f59e0b;
+  --color-warning-surface: #fff3cd;
+  --color-warning-text: #856404;
+
+  /* Stack del sistema: sin descargas, sin FOUT, sin preconnect de terceros. */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  /* dvh con fallback: la línea vh primero, dvh después (patrón del proyecto). */
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--gradient-page);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Títulos largos: balanceo de líneas. Progressive enhancement — los browsers
+   sin soporte (Safari <17.5, Firefox <121) lo ignoran sin romper nada. */
+h1,
+h2 {
+  text-wrap: balance;
+}
+
+/* height:auto solo para bitmap: en SVG inline con viewBox rompe el sizing de
+   los íconos. El tamaño de cada icono se controla desde su componente/clase. */
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+svg {
+  max-width: 100%;
+}
+
+/* Auditoría post-Fase 3: ya no queda ningún <a> sin href (toda la navegación
+   es <Link> de react-router o <button>), así que la regla `a { cursor: pointer }`
+   que existía se eliminó — el cursor pointer es el default del navegador. */
+
+/* Utilidad global (no es CSS Module, se usa como className="sr-only"):
+   contenido disponible para lectores de pantalla pero sin espacio visual.
+   Sirve para <label> de formularios cuyo hint visible es el placeholder. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Variante del skip link: oculta por defecto, PERO se revela al recibir foco
+   (`.sr-only` sola nunca reaparece, así que el skip link quedaría invisible
+   para teclado). El :focus-visible global le dibuja el anillo. */
+.sr-only-focusable:not(:focus):not(:focus-within) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Foco visible único y consistente para todo lo interactivo.
+   No se usa outline:none en ningún lado sin reemplazo equivalente.
+   :focus-visible es un outline instantáneo (no una transición), así que el
+   reduced-motion de abajo no afecta el feedback de foco. */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Base global intencional para <button>.
+   Se define con :where() para que la especificidad sea 0 y cualquier estilo de
+   componente (clase de módulo) lo pueda pisar sin conflicto.
+   A propósito vive en un archivo global: un selector de elemento dentro de un
+   CSS Module NO se scopea, así que se filtraba a toda la app sin que se notara
+   (pasaba en App.module.css y Alert.module.css, que competían entre sí).
+
+   ⚠ RIESGO DE CASCADA — leer antes de crear un botón custom:
+   OJO con :where(button):active. El :where() pone a 0 solo lo que envuelve,
+   pero :active queda FUERA del :where, así que la especificidad de ese bloque
+   es (0,1,0), no (0,0,0). Cualquier .miBoton { background: X } de un módulo
+   cargado después de main.css empata en (0,1,0) y gana por orden de fuente,
+   pisando el :active base en silencio (el botón no muestra estado presionado).
+   Por eso: cualquier botón con background propio debe definir también
+   :hover, :active y :disabled propios. Este bloque es piso, no comportamiento
+   heredado para botones custom. */
+:where(button) {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font: inherit;
+  transition: background-color 0.2s;
+}
+
+:where(button:active) {
+  background-color: var(--color-primary-active);
+}
+
+/* Controles deshabilitados quedan fuera del alcance de las reglas de contraste
+   de WCAG (están exentos), pero igual dan affordance claro. */
+:where(button:disabled) {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* El hover solo se aplica con puntero real: en táctil se pega y deja el botón
+   "prensionado" hasta que se toca otra cosa. */
+@media (hover: hover) and (pointer: fine) {
+  :where(button:hover:not(:disabled)) {
+    background-color: var(--color-primary-hover);
   }
-  a{
-    cursor: pointer;
+}
+
+/* Movimiento reducido: patrón estándar. El !important acá es correcto y
+   esperado — es lo único que puede pisar transiciones declaradas en
+   selectores de clase/especificidad mayor. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Desktop con puntero fino: suprime el rubber-band/rebound al llegar al final
+   de la página. En puntero grueso NO se aplica, para conservar el
+   pull-to-refresh nativo del navegador móvil. */
+@media (pointer: fine) {
+  html {
+    overscroll-behavior: none;
+  }
+}
+
+/* showModal() aplica inert al resto del documento, pero NO bloquea el scroll
+   del body fuera de Chromium (Firefox y Safari siguen scrolleando la página de
+   atrás). Este bloqueo con :has() lo resuelve en los tres motores.
+
+   :has() es Baseline 2023: sin Safari <15.4 ni Firefox <121. Esos navegadores
+   descartan la regla entera, así que además se togglea body.modal-open desde
+   src/lib/modalScrollLock.js como respaldo (mismo efecto, dos vías). */
+html:has(dialog[open]),
+body.modal-open {
+  overflow: hidden;
+}

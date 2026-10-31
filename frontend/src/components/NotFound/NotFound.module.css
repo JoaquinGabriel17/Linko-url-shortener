@@ -2,6 +2,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  /* Mismo layout de página que App/UserDashboard; el Navbar va por fuera
+     (hermano), full-bleed natural. */
+  width: 100%;
+  max-width: 960px;
+  margin-inline: auto;
+  padding-inline: 16px;
 }
 
 .content {
@@ -16,17 +22,17 @@
 .code {
   margin: 0;
   font-size: 5rem;
-  color: #1e90ff;
+  color: var(--color-primary);
 }
 
 .message {
   margin: 0;
   font-size: 1.2rem;
-  color: #0f172a;
+  color: var(--color-text);
 }
 
 .home {
   margin-top: 12px;
-  color: #1e90ff;
+  color: var(--color-primary);
   font-weight: 600;
 }

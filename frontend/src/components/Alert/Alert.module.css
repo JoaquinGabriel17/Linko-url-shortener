@@ -1,55 +1,51 @@
+/* El <dialog> es la tarjeta blanca centrada (UA la centra con margin:auto);
+   el scrim vive en ::backdrop. Ya no hay overlay a pantalla completa. */
 .overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-  .alertBox h3{
-    padding: 0;
-  }
-  
-  .alertBox {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    width: 90%;
-    max-width: 400px;
-    text-align: center;
-  }
-  
-  .alert {
-    border-left: 5px solid #007bff;
-  }
-  
-  .error {
-    border-left: 5px solid #dc3545;
-  }
-  
-  .confirm {
-    border-left: 5px solid #ffc107;
-  }
-  
-  .buttons {
-    margin-top: 15px;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-  }
-  
-  button {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  button:hover {
-    opacity: 0.9;
-  }
-  
+  padding: 20px;
+  /* iPhone con home indicator: sin esto los botones quedan pegados/bajo la
+     barra cuando el diálogo toca el borde inferior. */
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text);
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  overscroll-behavior: contain;
+}
+
+.overlay::backdrop {
+  background-color: var(--color-scrim);
+}
+
+.alertBox h3 {
+  margin: 0;
+  padding: 0;
+}
+
+.alertBox p {
+  margin: 12px 0 0;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+/* Acento izquierdo según tipo (error/confirm/info). */
+.alert {
+  border-left: 5px solid var(--color-primary);
+}
+
+.error {
+  border-left: 5px solid var(--color-danger);
+}
+
+.confirm {
+  /* --color-warning: acento SOLO decorativo (redundante con el título
+     "Confirmación"), nunca se usa como texto (2.15:1 sobre blanco). */
+  border-left: 5px solid var(--color-warning);
+}

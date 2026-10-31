@@ -30,13 +30,18 @@ function TopLinks() {
     }
   }, [user?.userId]);
 
-  if (loading) return <Loading message="Cargando tus links más clickeados..." />;
-  if (error) return <p className={styles.error}>{error}</p>;
+  if (loading) return <Loading message="Cargando tus links más clickeados…" />;
+  if (error)
+    return (
+      <p className={styles.error} role="alert">
+        {error}
+      </p>
+    );
   if (topLinks.length === 0) return null;
 
   return (
     <div className={styles.container}>
-      <h3>Tus links más clickeados</h3>
+      <h2>Tus links más clickeados</h2>
       <ul>
         {topLinks.map((link) => (
           <li key={link._id}>

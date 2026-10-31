@@ -1,13 +1,13 @@
 .formContainer {
   padding: 20px;
-  background: white;
-  border: 2px solid #1e90ff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  /* Safe-area inferior: botones del diálogo fuera del home indicator. */
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  background: var(--color-surface);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
   width: 550px;
   max-width: 92vw;
-  position: absolute;
-  z-index: 11;
 }
 
 .form {
@@ -17,28 +17,73 @@
 }
 
 .form input {
+  width: 100%;
   padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
   font-size: 1rem;
+  font-family: inherit;
+  color: var(--color-text);
+  background-color: var(--color-surface);
+}
+
+.form input:focus-visible {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(11, 94, 215, 0.2);
 }
 
 .actions {
   display: flex;
   justify-content: space-between;
+  gap: 12px;
+}
+
+/* Error de campo inline (asociado por aria-describedby al input). */
+.fieldError {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: 0.9rem;
 }
 
 .form button {
   padding: 8px 16px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  background-color: #1e90ff;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
   font-weight: bold;
   transition: background-color 0.2s;
 }
 
-.form button:hover {
-  background-color: #0d75d8;
+@media (hover: hover) and (pointer: fine) {
+  .form button:hover {
+    background-color: var(--color-primary-hover);
+  }
+}
+
+.form button:active {
+  background-color: var(--color-primary-active);
+}
+
+.form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* "Cancelar" no es una acción primaria: se estiliza como secundario.
+   Especificidad (0,2,0) > (0,1,1) de .form button, así pisa el fondo. */
+.form .secondary {
+  background-color: var(--color-muted);
+  color: var(--color-on-primary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .form .secondary:hover {
+    background-color: var(--color-muted-hover);
+  }
+}
+
+.form .secondary:active {
+  background-color: var(--color-muted-active);
 }

@@ -1,57 +1,122 @@
 .navbar {
-    display: flex
-    ;
-        align-items: center;
-        justify-content: space-around;
-        height: 60px;
-        background-color: #1e90ff;
-        color: white;
-        font-weight: bold;
-        font-size: 1.25rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        width: 100%;
-        margin-bottom: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Full-bleed natural: <Navbar /> es HERMANO de .container en el JSX
+     (App/UserDashboard/NotFound), así que 100% = ancho de body = viewport.
+     Sin márgenes negativos, sin 100vw (rompería con scrollbar clásica),
+     sin overflow-x hacks. */
+  width: 100%;
+  /* border-box global: padding-top entra DENTRO del min-height, así que con
+     notch hay que sumarlo o el contenido colapsa (60px - 47px = 13px). */
+  min-height: calc(60px + env(safe-area-inset-top, 0px));
+  margin-bottom: 50px;
+  padding-inline: 12px;
+  padding-top: env(safe-area-inset-top, 0px);
+  /* Antes hardcodeado #1e90ff (3.24:1 con texto blanco => fallaba AA). */
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: bold;
+  font-size: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.brand {
+  color: var(--color-on-primary);
+  text-decoration: none;
+  font-size: 1.25rem;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.navbar ul {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar li {
+  display: flex;
+  align-items: center;
+  height: 80%;
+  padding: 0 8px;
+  border-left: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ≥640px: se restauran las dimensiones de escritorio originales
+   (space-around eliminado a propósito: space-between es más predecible). */
+@media (min-width: 640px) {
+  .navbar {
+    padding-inline: 16px;
+    font-size: 1.25rem;
   }
-  .navbar h1{
-    cursor: pointer;
-  }
-  
-  .navbar ul {
-    list-style: none;
-    display: flex;
-    align-items: center;
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    justify-content: center;
-  }
-  
-  .navbar li {
-    cursor: pointer;
-    transition: opacity 0.2s ease;
-    border-left: solid 2px rgba(255, 255, 255, 0.295);
-    padding-left: 15px;
-    padding-right: 15px;
-    height: 80%;
-    display: flex;
-    align-items: center;
-  }
-  
-  .navbar li:hover {
-    opacity: 0.6;
-  }
-  
-  .navbar li svg {
+
+  .brand {
     font-size: 1.5rem;
   }
 
-  .icon {
-    width: 32px;
-    height: 32px;
-    color: white;
+  .navbar ul {
+    gap: 4px;
   }
-  
-  .navbar a{
-    color: white;
-    text-decoration: none;
+
+  .navbar li {
+    padding: 0 15px;
   }
+}
+
+.navbar a {
+  color: var(--color-on-primary);
+  text-decoration: none;
+}
+
+/* El foco global usa --color-primary, que es EXACTAMENTE el fondo del navbar:
+   sería invisible. Acá se redefine a blanco para que el outline se vea. */
+.navbar :focus-visible {
+  outline-color: var(--color-on-primary);
+}
+
+/* Antes era `opacity: 0.6`, que BAJA el contraste en estado interactivo
+   (anti-patrón). Ahora se sube contraste con un fondo sutil. */
+@media (hover: hover) and (pointer: fine) {
+  .navbar li:hover {
+    background-color: rgba(255, 255, 255, 0.14);
+  }
+}
+
+/* Botón de "Cerrar sesión": se anula el estilo :where(button) global para
+   fundirlo con la barra. Background propio => :active propio (ver main.css). */
+.navButton {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-on-primary);
+  font: inherit;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .navButton:hover {
+    opacity: 0.75;
+  }
+}
+
+.navButton:active {
+  opacity: 0.55;
+}
+
+.iconLink {
+  display: flex;
+  align-items: center;
+}
+
+.icon {
+  width: 32px;
+  height: 32px;
+  color: var(--color-on-primary);
+}

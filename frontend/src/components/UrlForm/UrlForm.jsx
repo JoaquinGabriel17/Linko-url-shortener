@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FaCheck, FaRegCopy } from 'react-icons/fa';
 import api, { getErrorMessage } from '../../api';
 import { useUser } from '../../context/userContext';
 import { useCopy } from '../../lib/useCopy';
+import { syncModalScrollLock } from '../../lib/modalScrollLock';
 import Loading from '../Loading/Loading';
 import styles from './UrlForm.module.css';
+
+const ERROR_ID = 'urlform-error';
 
 function isValidHttpUrl(value) {
   try {
@@ -18,7 +21,7 @@ function isValidHttpUrl(value) {
 // Formulario único de creación: se usa inline en la home y en modo modal en el
 // dashboard. El alias solo se ofrece a usuarios autenticados (el backend lo
 // rechaza con 401 para anónimos).
-export default function UrlForm({ inModal = false, onClose, onCreated }) {
+export default function UrlForm({ inModal = false, open = true, onClose, onCreated }) {
   const { user } = useUser();
   const [url, setUrl] = useState('');
   const [alias, setAlias] = useState('');
@@ -28,6 +31,42 @@ export default function UrlForm({ inModal = false, onClose, onCreated }) {
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
   const { copied, copy } = useCopy();
+  const dialogRef = useRef(null);
+
+  // <dialog> SIEMPRE montado (en modo modal); solo se togglea `open`.
+  // Sincroniza ambos sentidos para no llamar showModal() sobre un nodo
+  // inexistente. Regala Esc, ::backdrop, inert del resto y retorno de foco.
+  useEffect(() => {
+    if (!inModal) return undefined;
+    const el = dialogRef.current;
+    if (!el) return undefined;
+    if (open && !el.open) {
+      el.showModal();
+      syncModalScrollLock();
+    }
+    if (!open && el.open) {
+      el.close();
+      syncModalScrollLock();
+    }
+    return () => {
+      // Si el componente se desmonta con el diálogo abierto, cerrarlo y soltar
+      // el bloqueo de scroll; si no, la página quedaría inmovilizada.
+      if (el.open) el.close();
+      syncModalScrollLock();
+    };
+  }, [inModal, open]);
+
+  // Antes el montaje condicional reseteaba el formulario; ahora que el
+  // diálogo queda montado, se limpia cada vez que se abre.
+  useEffect(() => {
+    if (!inModal || !open) return;
+    setResult(null);
+    setUrl('');
+    setAlias('');
+    setName('');
+    setDescription('');
+    setError('');
+  }, [inModal, open]);
 
   // Omite los campos vacíos: un alias vacío fallaría la validación y name/
   // description vacíos desactivarían la deduplicación del backend.
@@ -77,54 +116,79 @@ export default function UrlForm({ inModal = false, onClose, onCreated }) {
   const form = (
     <>
       <form className={styles.form} onSubmit={handleSubmit}>
+        <label className="sr-only" htmlFor="urlform-url">
+          URL a acortar
+        </label>
         <input
+          id="urlform-url"
           className={styles.input}
           type="text"
-          placeholder="Pegá tu URL (https://...)"
+          inputMode="url"
+          placeholder="Pegá tu URL (https://…)"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
+          autoComplete="url"
           disabled={loading}
           required
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? ERROR_ID : undefined}
         />
 
         {user && (
           <div className={styles.metaFields}>
+            <label className="sr-only" htmlFor="urlform-alias">
+              Alias
+            </label>
             <input
+              id="urlform-alias"
               className={styles.input}
               type="text"
               placeholder="Alias (opcional)"
               value={alias}
               onChange={(e) => setAlias(e.target.value)}
+              autoComplete="off"
               disabled={loading}
             />
+
+            <label className="sr-only" htmlFor="urlform-name">
+              Nombre
+            </label>
             <input
+              id="urlform-name"
               className={styles.input}
               type="text"
               placeholder="Nombre (opcional)"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              autoComplete="off"
               disabled={loading}
             />
+
+            <label className="sr-only" htmlFor="urlform-description">
+              Descripción
+            </label>
             <input
+              id="urlform-description"
               className={styles.input}
               type="text"
               placeholder="Descripción (opcional)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              autoComplete="off"
               disabled={loading}
             />
           </div>
         )}
 
         <button className={styles.submit} type="submit" disabled={loading}>
-          {loading ? 'Acortando...' : 'Acortar'}
+          {loading ? 'Acortando…' : 'Acortar'}
         </button>
       </form>
 
-      {loading && <Loading message="Acortando link" />}
+      {loading && <Loading message="Acortando link…" />}
 
       {error && (
-        <p className={styles.error} role="alert">
+        <p id={ERROR_ID} className={styles.error} role="alert">
           {error}
         </p>
       )}
@@ -154,11 +218,11 @@ export default function UrlForm({ inModal = false, onClose, onCreated }) {
             >
               {copied ? (
                 <>
-                  <FaCheck /> ¡Copiado!
+                  <FaCheck aria-hidden="true" focusable="false" /> ¡Copiado!
                 </>
               ) : (
                 <>
-                  <FaRegCopy /> Copiar
+                  <FaRegCopy aria-hidden="true" focusable="false" /> Copiar
                 </>
               )}
             </button>
@@ -185,20 +249,29 @@ export default function UrlForm({ inModal = false, onClose, onCreated }) {
 
   if (inModal) {
     return (
-      <div className={styles.overlay} onClick={onClose}>
-        <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-          <button
-            type="button"
-            className={styles.close}
-            onClick={onClose}
-            aria-label="Cerrar"
-          >
-            ×
-          </button>
-          <h2 className={styles.title}>Nuevo link</h2>
-          {form}
-        </div>
-      </div>
+      <dialog
+        ref={dialogRef}
+        className={styles.modal}
+        aria-labelledby="urlform-modal-title"
+        onCancel={onClose}
+        onClick={(e) => {
+          // El click sobre el ::backdrop llega con target === el propio dialog.
+          if (e.target === dialogRef.current) onClose();
+        }}
+      >
+        <button
+          type="button"
+          className={styles.close}
+          onClick={onClose}
+          aria-label="Cerrar"
+        >
+          ×
+        </button>
+        <h2 className={styles.title} id="urlform-modal-title">
+          Nuevo link
+        </h2>
+        {form}
+      </dialog>
     );
   }
 
